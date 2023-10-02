@@ -11,8 +11,10 @@ And hopefully the first of many. Let's get started:
 
 <!-- -->
 
-    install.packages("devtools")
-    devtools::install_github("UBC-MDS/datateachr")
+```         
+install.packages("devtools")
+devtools::install_github("UBC-MDS/datateachr")
+```
 
 2.  Load the packages below.
 
@@ -29,11 +31,11 @@ library(tidyverse)
 
 -   Each milestone has explicit tasks. Tasks that are more challenging will often be allocated more points.
 
--  Each milestone will be also graded for reproducibility, cleanliness, and coherence of the overall Github submission. 
+-   Each milestone will be also graded for reproducibility, cleanliness, and coherence of the overall Github submission.
 
-- While the two milestones will be submitted as independent deliverables, the analysis itself is a continuum - think of it as two chapters to a story. Each chapter, or in this case, portion of your analysis, should be easily followed through by someone unfamiliar with the content. [Here](https://swcarpentry.github.io/r-novice-inflammation/06-best-practices-R/) is a good resource for what constitutes "good code". Learning good coding practices early in your career will save you hassle later on!
+-   While the two milestones will be submitted as independent deliverables, the analysis itself is a continuum - think of it as two chapters to a story. Each chapter, or in this case, portion of your analysis, should be easily followed through by someone unfamiliar with the content. [Here](https://swcarpentry.github.io/r-novice-inflammation/06-best-practices-R/) is a good resource for what constitutes "good code". Learning good coding practices early in your career will save you hassle later on!
 
-- The milestones will be equally weighted. 
+-   The milestones will be equally weighted.
 
 ## For Milestone 1
 
@@ -41,7 +43,7 @@ library(tidyverse)
 
 **To submit this milestone**, make sure to knit this `.Rmd` file to an `.md` file by changing the YAML output settings from `output: html_document` to `output: github_document`. Commit and push all of your work to the mini-analysis GitHub repository you made earlier, and tag a release on GitHub. Then, submit a link to your tagged release on canvas.
 
-**Points**: This milestone is worth 36 points: 30 for your analysis, and 6 for overall reproducibility, cleanliness, and coherence of the Github submission. 
+**Points**: This milestone is worth 36 points: 30 for your analysis, and 6 for overall reproducibility, cleanliness, and coherence of the Github submission.
 
 # Learning Objectives
 
@@ -52,7 +54,7 @@ By the end of this milestone, you should:
 -   Generate a reproducible and clear report using R Markdown
 -   Become familiar with manipulating and summarizing your data in tibbles using `dplyr`, with a research question in mind.
 
-# Task 1: Choose your favorite dataset 
+# Task 1: Choose your favorite dataset
 
 The `datateachr` package by Hayley Boyce and Jordan Bourak currently composed of 7 semi-tidy datasets for educational purposes. Here is a brief description of each dataset:
 
@@ -84,10 +86,7 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-1: steam_games
-2: vancouver_trees
-3: cancer_sample
-4: apt_buildings
+1: steam_games 2: vancouver_trees 3: cancer_sample 4: apt_buildings
 
 <!----------------------------------------------------------------------------->
 
@@ -120,15 +119,15 @@ glimpse(apt_buildings)
 
 <!-------------------------- Start your work below ---------------------------->
 
-I'm the most interested in the `steam_games` dataset. I love playing video games so it's a dataset close to heart. With the variables given I believe I can do some interesting analysis and visualization. 
+I'm the most interested in the `steam_games` dataset. I love playing video games so it's a dataset close to heart. With the variables given I believe I can do some interesting analysis and visualization.
 
 <!----------------------------------------------------------------------------->
 
-1.4 **(2 points)** Time for a  final decision! Going back to the beginning, it's important to have an *end goal* in mind. For example, if I had chosen the `titanic` dataset for my project, I might've wanted to explore the relationship between survival and other variables. Try to think of 1 research question that you would want to answer with your dataset. Note it down below.
+1.4 **(2 points)** Time for a final decision! Going back to the beginning, it's important to have an *end goal* in mind. For example, if I had chosen the `titanic` dataset for my project, I might've wanted to explore the relationship between survival and other variables. Try to think of 1 research question that you would want to answer with your dataset. Note it down below.
 
 <!-------------------------- Start your work below ---------------------------->
 
-1. what genre has the most games?
+1.  what genre has the most games?
 
 <!----------------------------------------------------------------------------->
 
@@ -138,11 +137,11 @@ Read Tasks 2 and 3 *fully* before starting to complete either of them. Probably 
 
 This project is semi-guided, but meant to be *independent*. For this reason, you will complete tasks 2 and 3 below (under the **START HERE** mark) as if you were writing your own exploratory data analysis report, and this guidance never existed! Feel free to add a brief introduction section to your project, format the document with markdown syntax as you deem appropriate, and structure the analysis as you deem appropriate. If you feel lost, you can find a sample data analysis [here](https://www.kaggle.com/headsortails/tidy-titarnic) to have a better idea. However, bear in mind that it is **just an example** and you will not be required to have that level of complexity in your project.
 
-# Task 2: Exploring your dataset 
+# Task 2: Exploring your dataset
 
 If we rewind and go back to the learning objectives, you'll see that by the end of this deliverable, you should have formulated *4* research questions about your data that you may want to answer during your project. However, it may be handy to do some more exploration on your dataset of choice before creating these questions - by looking at the data, you may get more ideas. **Before you start this task, read all instructions carefully until you reach START HERE under Task 3**.
 
-2.1 **(12 points)** Complete *4 out of the following 8 exercises* to dive deeper into your data. All datasets are different and therefore, not all of these tasks may make sense for your data - which is why you should only answer *4*. 
+2.1 **(12 points)** Complete *4 out of the following 8 exercises* to dive deeper into your data. All datasets are different and therefore, not all of these tasks may make sense for your data - which is why you should only answer *4*.
 
 Make sure that you're using dplyr and ggplot2 rather than base R for this task. Outside of this project, you may find that you prefer using base R functions for certain tasks, and that's just fine! But part of this project is for you to practice the tools we learned in class, which is dplyr and ggplot2.
 
@@ -158,7 +157,9 @@ Make sure that you're using dplyr and ggplot2 rather than base R for this task. 
 2.2 **(4 points)** For each of the 4 exercises that you complete, provide a *brief explanation* of why you chose that exercise in relation to your data (in other words, why does it make sense to do that?), and sufficient comments for a reader to understand your reasoning and code.
 
 <!-------------------------- Start your work below ---------------------------->
+
 ## filter observations according to your own criteria
+
 I want to focus my exploration on games/apps, however other types of content are included in the dataset, we can see them if we look closer at the unique entries in the `types` column:
 
 ```{r}
@@ -173,38 +174,61 @@ steam_games %>%
   summarise(number_apps = n())
 ```
 
-## create a new variable
+## create a new variable and make a subset of your data
 
+I would like to use the release month and release year to analyse changes or find patterns in other variables through time. For that we will have to create two new columns: `release_month` and `release_year` based on the `release_date` column. It is important to note that not all entries have a release date, some haven't even been released; we will only keep those that have month and year. We do this assuming that those release date entries have this string format:
 
-## make a new tibble with a subset of your data
+> MMM DD, YYYY
 
+So using the index numbers for the month and year we can subset the `release_date` string. 
+
+```{r}
+
+month_order <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+steam_data <- steam_games %>%
+  filter(types == "app") %>%
+  # remove rows that don't have a month specified
+  filter(str_detect(release_date,paste(month_order,collapse = "|"))) %>%
+  # create month and year columns
+  mutate(release_month = str_sub(release_date,1,3), 
+         release_year = as.numeric(str_sub(release_date,-4,-1))) %>%
+  #delete rows that have NAs, didn't have the assumed date format, and haven't been released yet
+  drop_na(release_year) %>%
+  filter(release_month %in% month_order) %>%
+  filter(release_year <= 2023)
+```
+To be able to order months chronologically, we can convert `release_month` from string to an ordered factor column. 
+
+```{r}
+steam_data$release_month <- factor(steam_data$release_month, levels = month_order, ordered = TRUE)
+```
 
 ## explore the relationship between 2 variables
 
 
-
 <!----------------------------------------------------------------------------->
 
-# Task 3: Choose research questions 
+# Task 3: Choose research questions
 
-**(4 points)** So far, you have chosen a dataset and gotten familiar with it through exploring the data. You have also brainstormed one research question that interested you (Task 1.4).  Now it's time to pick 4 research questions that you would like to explore in Milestone 2! Write the 4 questions and any additional comments below. 
+**(4 points)** So far, you have chosen a dataset and gotten familiar with it through exploring the data. You have also brainstormed one research question that interested you (Task 1.4). Now it's time to pick 4 research questions that you would like to explore in Milestone 2! Write the 4 questions and any additional comments below.
 
 <!--- *****START HERE***** --->
-1. what genre has the most games?
-2. what is the structure or relationship between genres?
-3. how have genres and the number of games changed across years?
-4. is there any relation between genre and rating?
-<!----------------------------->
 
-# Overall reproducibility/Cleanliness/Coherence Checklist 
+1.  what genre has the most games?
+2.  what is the structure or relationship between genres?
+3.  how have genres and the number of games changed across years?
+4.  is there any relation between genre and rating? <!----------------------------->
+
+# Overall reproducibility/Cleanliness/Coherence Checklist
 
 ## Coherence (0.5 points)
 
-The document should read sensibly from top to bottom, with no major continuity errors. An example of a major continuity error is having a data set listed for Task 3 that is not part of one of the data sets listed in Task 1. 
+The document should read sensibly from top to bottom, with no major continuity errors. An example of a major continuity error is having a data set listed for Task 3 that is not part of one of the data sets listed in Task 1.
 
-## Error-free code (3 points) 
+## Error-free code (3 points)
 
-For full marks, all code in the document should run without error. 1 point deduction if most code runs without error, and 2 points deduction if more than 50% of the code throws an error. 
+For full marks, all code in the document should run without error. 1 point deduction if most code runs without error, and 2 points deduction if more than 50% of the code throws an error.
 
 ## Main README (1 point)
 
@@ -221,7 +245,7 @@ Once you get in the habit of making README files, and seeing more README files i
 
 All output is readable, recent and relevant:
 
--   All Rmd files have been `knit`ted to their output md files. 
+-   All Rmd files have been `knit`ted to their output md files.
 -   All knitted md files are viewable without errors on Github. Examples of errors: Missing plots, "Sorry about that, but we can't show files that are this big right now" messages, error messages from broken R code
 -   All of these output files are up-to-date -- that is, they haven't fallen behind after the source (Rmd) files have been updated.
 -   There should be no relic output files. For example, if you were knitting an Rmd to html, but then changed the output to be only a markdown file, then the html file is a relic and should be deleted.
@@ -232,7 +256,7 @@ Our recommendation: right before submission, delete all output files, and re-kni
 
 ## Tagged release (0.5 points)
 
-You've tagged a release for Milestone 1. 
+You've tagged a release for Milestone 1.
 
 ### Attribution
 
