@@ -1,6 +1,6 @@
 ---
 title: "Mini Data-Analysis Deliverable 1"
-output: html_document
+output: github_document
 ---
 
 # Welcome to your (maybe) first-ever data analysis project!
@@ -84,10 +84,10 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-1: CHOICE_1\_HERE\
-2: CHOICE_2\_HERE\
-3: CHOICE_3\_HERE\
-4: CHOICE_4\_HERE
+1: steam_games
+2: vancouver_trees
+3: cancer_sample
+4: apt_buildings
 
 <!----------------------------------------------------------------------------->
 
@@ -99,7 +99,19 @@ And that is exactly the first thing that you will do!
 
 ```{r}
 ### EXPLORE HERE ###
-steam_games
+glimpse(steam_games)
+```
+
+```{r}
+glimpse(vancouver_trees)
+```
+
+```{r}
+glimpse(cancer_sample)
+```
+
+```{r}
+glimpse(apt_buildings)
 ```
 
 <!----------------------------------------------------------------------------->
@@ -108,11 +120,15 @@ steam_games
 
 <!-------------------------- Start your work below ---------------------------->
 
+I'm the most interested in the `steam_games` dataset. I love playing video games so it's a dataset close to heart. With the variables given I believe I can do some interesting analysis and visualization. 
+
 <!----------------------------------------------------------------------------->
 
 1.4 **(2 points)** Time for a  final decision! Going back to the beginning, it's important to have an *end goal* in mind. For example, if I had chosen the `titanic` dataset for my project, I might've wanted to explore the relationship between survival and other variables. Try to think of 1 research question that you would want to answer with your dataset. Note it down below.
 
 <!-------------------------- Start your work below ---------------------------->
+
+1. what genre has the most games?
 
 <!----------------------------------------------------------------------------->
 
@@ -142,6 +158,30 @@ Make sure that you're using dplyr and ggplot2 rather than base R for this task. 
 2.2 **(4 points)** For each of the 4 exercises that you complete, provide a *brief explanation* of why you chose that exercise in relation to your data (in other words, why does it make sense to do that?), and sufficient comments for a reader to understand your reasoning and code.
 
 <!-------------------------- Start your work below ---------------------------->
+## filter observations according to your own criteria
+I want to focus my exploration on games/apps, however other types of content are included in the dataset, we can see them if we look closer at the unique entries in the `types` column:
+
+```{r}
+unique(steam_games$types)
+```
+
+Subs and bundles are collections and it might duplicate data (if a game or app is in a bundle then its features like genre and tags will be repeated). What I'm interested in is "app" so let's filter the data set to only include apps, and count many there are.
+
+```{r}
+steam_games %>%
+  filter(types == "app") %>%
+  summarise(number_apps = n())
+```
+
+## create a new variable
+
+
+## make a new tibble with a subset of your data
+
+
+## explore the relationship between 2 variables
+
+
 
 <!----------------------------------------------------------------------------->
 
@@ -150,7 +190,10 @@ Make sure that you're using dplyr and ggplot2 rather than base R for this task. 
 **(4 points)** So far, you have chosen a dataset and gotten familiar with it through exploring the data. You have also brainstormed one research question that interested you (Task 1.4).  Now it's time to pick 4 research questions that you would like to explore in Milestone 2! Write the 4 questions and any additional comments below. 
 
 <!--- *****START HERE***** --->
-
+1. what genre has the most games?
+2. what is the structure or relationship between genres?
+3. how have genres and the number of games changed across years?
+4. is there any relation between genre and rating?
 <!----------------------------->
 
 # Overall reproducibility/Cleanliness/Coherence Checklist 
