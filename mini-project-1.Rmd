@@ -86,7 +86,10 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-1: steam_games 2: vancouver_trees 3: cancer_sample 4: apt_buildings
+1. steam_games 
+2. vancouver_trees  
+3. cancer_sample  
+4. apt_buildings  
 
 <!----------------------------------------------------------------------------->
 
@@ -193,10 +196,12 @@ steam_data <- steam_games %>%
   # create month and year columns
   mutate(release_month = str_sub(release_date,1,3), 
          release_year = as.numeric(str_sub(release_date,-4,-1))) %>%
-  #delete rows that have NAs, didn't have the assumed date format, and haven't been released yet
+  # delete rows that have NAs, didn't have the assumed date format, and haven't been released yet
   drop_na(release_year) %>%
   filter(release_month %in% month_order) %>%
-  filter(release_year <= 2023)
+  filter(release_year <= 2023) %>%
+  # select a few columns of interest
+  select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher)
 ```
 To be able to order months chronologically, we can convert `release_month` from string to an ordered factor column. 
 
@@ -206,6 +211,30 @@ steam_data$release_month <- factor(steam_data$release_month, levels = month_orde
 
 ## explore the relationship between 2 variables
 
+I want to explore the relationship between number of games released per month to see if there is a pattern or a trend (more games released on holiday months for example). 
+
+```{r}
+steam_data %>%
+  group_by(release_month) %>%
+  reframe(number_games = n()) %>%
+  ggplot(aes(release_month, number_games)) +
+  geom_segment(aes(x = release_month, 
+                   xend = release_month, 
+                   y = 0, 
+                   yend = number_games), 
+               color = "gray") +
+  geom_point(color="pink", size=3) +
+  theme_light() +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
+  xlab("Month") +
+  ylab("Number of Games")
+```
+
+We can see there are two "peaks" in game releases the first during March-May and the second October. The second one however is more pronounced, compared with the lower game releases during the summer months. This could be because October sets the stage for holiday sales during November and December. I'd have to look into what other things could influence game releases, especially during March-May months. 
 
 <!----------------------------------------------------------------------------->
 
@@ -215,10 +244,14 @@ steam_data$release_month <- factor(steam_data$release_month, levels = month_orde
 
 <!--- *****START HERE***** --->
 
-1.  what genre has the most games?
-2.  what is the structure or relationship between genres?
-3.  how have genres and the number of games changed across years?
-4.  is there any relation between genre and rating? <!----------------------------->
+1.  what genre has the most games? how has that changed across the years?
+2.  do developers (or publishers) tend to stick with the same genres?
+3.  what is the structure or relationship between genres?
+4.  is there any relation between genre and rating? 
+
+I'm interested especially in exploring and analyzing video game genre. I didn't explore it in this milestone because I'd have to keep myself from answering all the research questions now and have nothing to do in the next milestone.😅
+
+<!----------------------------->
 
 # Overall reproducibility/Cleanliness/Coherence Checklist
 
