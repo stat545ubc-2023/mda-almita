@@ -410,7 +410,7 @@ unique(steam_games$types)
 Subs and bundles are collections and it might duplicate data (if a game
 or app is in a bundle then its features like genre and tags will be
 repeated). What I’m interested in is “app” so let’s filter the data set
-to only include apps, and count many there are.
+to only include apps, and count how many there are.
 
 ``` r
 steam_games %>%
@@ -495,7 +495,7 @@ steam_data %>%
   ylab("Number of Games")
 ```
 
-![](mini-project-1_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](mini-project-1_files/figure-gfm/games_per_month-1.png)<!-- -->
 
 We can see there are two “peaks” in game releases the first during
 March-May and the second October. The second one however is more
