@@ -169,7 +169,7 @@ I want to focus my exploration on games/apps, however other types of content are
 unique(steam_games$types)
 ```
 
-Subs and bundles are collections and it might duplicate data (if a game or app is in a bundle then its features like genre and tags will be repeated). What I'm interested in is "app" so let's filter the data set to only include apps, and count many there are.
+Subs and bundles are collections and it might duplicate data (if a game or app is in a bundle then its features like genre and tags will be repeated). What I'm interested in is "app" so let's filter the data set to only include apps, and count how many there are.
 
 ```{r}
 steam_games %>%
@@ -213,7 +213,7 @@ steam_data$release_month <- factor(steam_data$release_month, levels = month_orde
 
 I want to explore the relationship between number of games released per month to see if there is a pattern or a trend (more games released on holiday months for example). 
 
-```{r}
+```{r games_per_month}
 steam_data %>%
   group_by(release_month) %>%
   reframe(number_games = n()) %>%
