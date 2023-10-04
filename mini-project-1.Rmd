@@ -194,7 +194,7 @@ I would like to use the release month and release year to analyse changes or fin
 
 > MMM DD, YYYY
 
-So using the index numbers for the month and year we can subset the `release_date` string. 
+So using the index numbers for the month and year we can subset the `release_date` string and create the new columns and assign them to a new dataset with other variables of interest:
 
 ```{r}
 
@@ -212,7 +212,7 @@ steam_data <- steam_games %>%
   filter(release_month %in% month_order) %>%
   filter(release_year <= 2023) %>%
   # select a few columns of interest
-  select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher)
+  select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher, original_price)
 ```
 To be able to order months chronologically, we can convert `release_month` from string to an ordered factor column. 
 
@@ -220,9 +220,20 @@ To be able to order months chronologically, we can convert `release_month` from 
 steam_data$release_month <- factor(steam_data$release_month, levels = month_order, ordered = TRUE)
 ```
 
-## explore the relationship between 2 variables
+If we plot the distribution of both years and months, we can see a timeline of games released across time.
 
-I want to explore the relationship between number of games released per month to see if there is a pattern or a trend (more games released on holiday months for example). 
+```{r games per year}
+steam_data %>%
+  ggplot(aes(x = release_year)) +
+  geom_histogram(fill = "pink") +
+  scale_y_log10() + #changed the scale to logarithmic so we can better see the plot 
+  theme_minimal() +
+  ylab("Number of games released") +
+  xlab("Year")
+```
+We can see an exponential increase in games released throughout the years. 
+
+For the month distribution we'll do a different graph just for fun:
 
 ```{r games_per_month}
 steam_data %>%
@@ -245,7 +256,10 @@ steam_data %>%
   ylab("Number of Games")
 ```
 
-We can see there are two "peaks" in game releases the first during March-May and the second October. The second one however is more pronounced, compared with the lower game releases during the summer months. This could be because October sets the stage for holiday sales during November and December. I'd have to look into what other things could influence game releases, especially during March-May months. 
+We can see there are two "peaks" in game releases the first during March-May and the second October. The second one however is more pronounced, compared with the lower game releases during the summer months. This could be because October sets the stage for holiday sales during November and December. I'd have to look into what other things could influence game releases, especially during March-May months.
+
+## explore the relationship between 2 variables
+
 
 <!----------------------------------------------------------------------------->
 
