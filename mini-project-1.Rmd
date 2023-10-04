@@ -171,13 +171,22 @@ I want to focus my exploration on games/apps, however other types of content are
 unique(steam_games$types)
 ```
 
-Subs and bundles are collections and it might duplicate data (if a game or app is in a bundle then its features like genre and tags will be repeated). What I'm interested in is "app" so let's filter the data set to only include apps, and count how many there are.
+To compare the quantities of each type I'll make a simple barplot
+
+```{r}
+steam_games %>%
+  ggplot(aes(types)) +
+  geom_bar(aes(fill = types)) +
+  theme_minimal()
+```
+There are significantly more `app`s than `bundle`s and `sub`s. Bundles and subs are collections of other apps or even DLCs, and this might duplicate data (if a game or app is in a bundle then its features like genre and tags will be repeated). What I'm interested in is "app" so let's filter the data set to only include apps, and count how many there are.
 
 ```{r}
 steam_games %>%
   filter(types == "app") %>%
   summarise(number_apps = n())
 ```
+That is plenty to work with!
 
 ## create a new variable and make a subset of your data
 
