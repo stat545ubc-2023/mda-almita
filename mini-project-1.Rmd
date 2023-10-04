@@ -99,6 +99,8 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
+So to look at many different dataset attributes at the same time we can use the the `glimpse()` function from the `dplyr` package to see: number of rows, number of columns, column names and types as well as some of the entries in each of the columns. 
+
 ```{r}
 ### EXPLORE HERE ###
 glimpse(steam_games)
