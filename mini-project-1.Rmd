@@ -190,7 +190,7 @@ That is plenty to work with!
 
 ## create a new variable and make a subset of your data
 
-I would like to use the release month and release year to analyse changes or find patterns in other variables through time. For that we will have to create two new columns: `release_month` and `release_year` based on the `release_date` column. It is important to note that not all entries have a release date, some haven't even been released; we will only keep those that have month and year. We do this assuming that those release date entries have this string format:
+I would like to use the release month and release year to analyse changes or find patterns in other variables through time. For that we will have to create two new columns: `release_month` and `release_year` based on the `release_date` column. It is important to note that this dataset was last updated on 2019, therefore I will drop the entries of games with "future release dates". Also, to make things easier, I will keep only those entries that both month and year. We do this assuming that those release date entries have this string format:
 
 > MMM DD, YYYY
 
@@ -210,7 +210,7 @@ steam_data <- steam_games %>%
   # delete rows that have NAs, didn't have the assumed date format, and haven't been released yet
   drop_na(release_year) %>%
   filter(release_month %in% month_order) %>%
-  filter(release_year <= 2023) %>%
+  filter(release_year <= 2019) %>%
   # select a few columns of interest
   select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher, original_price)
 ```
