@@ -173,7 +173,7 @@ unique(steam_games$types)
 
 To compare the quantities of each type I'll make a simple barplot
 
-```{r}
+```{r entry types}
 steam_games %>%
   ggplot(aes(types)) +
   geom_bar(aes(fill = types)) +
@@ -258,7 +258,21 @@ steam_data %>%
 
 We can see there are two "peaks" in game releases the first during March-May and the second October. The second one however is more pronounced, compared with the lower game releases during the summer months. This could be because October sets the stage for holiday sales during November and December. I'd have to look into what other things could influence game releases, especially during March-May months.
 
-## explore the relationship between 2 variables
+## Use a density plot to explore any of your variables
+
+I'd like to explore the distribution of game prices across steam, so I'll make a density plot to visualize it. First I need to remove `NA` values, then make the plot
+
+```{r}
+min(steam_games$original_price, na.rm = TRUE)
+max(steam_games$original_price, na.rm = TRUE)
+```
+
+```{r}
+steam_games %>%
+  filter(!is.na(original_price)) %>%
+  ggplot(aes(x = log10(original_price + 1), na.rm = TRUE)) +
+  geom_density()
+```
 
 
 <!----------------------------------------------------------------------------->
