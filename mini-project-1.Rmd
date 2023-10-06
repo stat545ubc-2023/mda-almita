@@ -179,7 +179,7 @@ To compare the quantities of each type I'll make a simple barplot
 steam_games %>%
   ggplot(aes(types)) +
   geom_bar(aes(fill = types)) +
-  theme_minimal()
+  theme_bw()
 ```
 
 There are significantly more `app`s than `bundle`s and `sub`s. Bundles and subs are collections of other apps or even DLCs, and this might duplicate data (if a game or app is in a bundle then its features like genre and tags will be repeated). What I'm interested in is "app" so let's filter the data set to only include apps, and count how many there are.
@@ -311,7 +311,8 @@ Now here is the resulting density plot:
 ```{r first density plot}
 steam_data %>%
   ggplot(aes(original_price)) +
-  geom_density(aes(y=after_stat(count)))
+  geom_density(aes(y=after_stat(count))) +
+  theme_bw()
 ```
 
 However, there seem to be some games above the 500 price-point that act as outliers, not allowing to see the bulk of the most common prices.
@@ -333,8 +334,7 @@ steam_data %>%
   ggplot(aes(original_price)) +
   geom_density(aes(y = after_stat(count)), 
                fill = "pink", 
-               colour = "pink", 
-               alpha = 0.3) +
+               colour = "pink") +
   scale_x_continuous(trans = scales::log1p_trans(), 
                      # change labes to dollar format
                      labels = scales::dollar_format(), 
@@ -344,6 +344,7 @@ steam_data %>%
   xlab("Original Price (USD)") +
   theme_bw()
 ```
+
 So according to the plot, the bulk of the games are below the \$20 price point. 
 
 <!----------------------------------------------------------------------------->
