@@ -86,10 +86,10 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-1. steam_games 
-2. vancouver_trees  
-3. cancer_sample  
-4. apt_buildings  
+1.  steam_games
+2.  vancouver_trees\
+3.  cancer_sample\
+4.  apt_buildings
 
 <!----------------------------------------------------------------------------->
 
@@ -99,7 +99,7 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-So to look at many different dataset attributes at the same time we can use the the `glimpse()` function from the `dplyr` package to see: number of rows, number of columns, column names and types as well as some of the entries in each of the columns. 
+So to look at many different dataset attributes at the same time we can use the the `glimpse()` function from the `dplyr` package to see: number of rows, number of columns, column names and types as well as some of the entries in each of the columns.
 
 ```{r}
 ### EXPLORE HERE ###
@@ -163,7 +163,9 @@ Make sure that you're using dplyr and ggplot2 rather than base R for this task. 
 
 <!-------------------------- Start your work below ---------------------------->
 
-## filter observations according to your own criteria
+## Filtering data by type
+
+This section corresponds to the exercise: (5) "*Filter observations in your data according to your own criteria*".
 
 I want to focus my exploration on games/apps, however other types of content are included in the dataset, we can see them if we look closer at the unique entries in the `types` column:
 
@@ -179,6 +181,7 @@ steam_games %>%
   geom_bar(aes(fill = types)) +
   theme_minimal()
 ```
+
 There are significantly more `app`s than `bundle`s and `sub`s. Bundles and subs are collections of other apps or even DLCs, and this might duplicate data (if a game or app is in a bundle then its features like genre and tags will be repeated). What I'm interested in is "app" so let's filter the data set to only include apps, and count how many there are.
 
 ```{r}
@@ -186,9 +189,11 @@ steam_games %>%
   filter(types == "app") %>%
   summarise(number_apps = n())
 ```
+
 That is plenty to work with!
 
-## create a new variable and make a subset of your data
+## Release dates
+This section correspond to the exercises: (2) "*Create a new variable based on other variables in your data*" & (7) "*Make a new tibble with a subset of your data*"
 
 I would like to use the release month and release year to analyse changes or find patterns in other variables through time. For that we will have to create two new columns: `release_month` and `release_year` based on the `release_date` column. It is important to note that this dataset was last updated on 2019, therefore I will drop the entries of games with "future release dates". Also, to make things easier, I will keep only those entries that both month and year. We do this assuming that those release date entries have this string format:
 
@@ -197,27 +202,34 @@ I would like to use the release month and release year to analyse changes or fin
 So using the index numbers for the month and year we can subset the `release_date` string and create the new columns and assign them to a new dataset with other variables of interest:
 
 ```{r}
-
+# create a vector of ordered months to use for filtering and for factor order
 month_order <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 steam_data <- steam_games %>%
+  # filter by "app" like before
   filter(types == "app") %>%
-  # remove rows that don't have a month specified
-  filter(str_detect(release_date,paste(month_order,collapse = "|"))) %>%
+  # remove rows that don't have a month specified using str_detect()
+  filter(str_detect(release_date,
+                    paste(month_order, collapse = "|"))
+         ) %>%
   # create month and year columns
-  mutate(release_month = str_sub(release_date,1,3), 
-         release_year = as.numeric(str_sub(release_date,-4,-1))) %>%
+  mutate(release_month = str_sub(release_date, 1, 3), 
+         release_year = as.numeric(str_sub(release_date, -4, -1))
+         ) %>%
   # delete rows that have NAs, didn't have the assumed date format, and haven't been released yet
   drop_na(release_year) %>%
   filter(release_month %in% month_order) %>%
   filter(release_year <= 2019) %>%
   # select a few columns of interest
-  select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher, original_price, discount_price, url)
+  select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher, original_price)
 ```
-To be able to order months chronologically, we can convert `release_month` from string to an ordered factor column. 
+
+To be able to order months chronologically, we can convert `release_month` from string to an ordered factor column using the `month_order` vector.
 
 ```{r}
-steam_data$release_month <- factor(steam_data$release_month, levels = month_order, ordered = TRUE)
+steam_data$release_month <- factor(steam_data$release_month, 
+                                   levels = month_order, 
+                                   ordered = TRUE)
 ```
 
 If we plot the distribution of both years and months, we can see a timeline of games released across time.
@@ -231,7 +243,8 @@ steam_data %>%
   ylab("Number of games released") +
   xlab("Year")
 ```
-We can see an exponential increase in games released throughout the years. 
+
+We can see an exponential increase in games released throughout the years.
 
 For the month distribution we'll do a different graph just for fun:
 
@@ -258,37 +271,42 @@ steam_data %>%
 
 We can see there are two "peaks" in game releases the first during March-May and the second October. The second one however is more pronounced, compared with the lower game releases during the summer months. This could be because October sets the stage for holiday sales during November and December. I'd have to look into what other things could influence game releases, especially during March-May months.
 
-## Use a density plot to explore any of your variables
+## Price distribution
+This section corresponds to the exercises: (1) "*Plot the distribution of a numeric variable*" & (8) "*Use a density plot to explore any of your variables*"
 
-I'd like to explore the distribution of game prices across steam, so I'll make a density plot to visualize it. But before that I want to explore a bit more the price column:
+I'd like to explore the distribution of game prices across steam, so I'll make a density plot to visualize it. But before that I want to get a bit more info from the price column. The `summary()` function gives us detail into the minimum and max values as other statistical measures such as mean and median, among others. 
 
 ```{r}
 summary(steam_data$original_price)
 ```
-So the max price seems a bit outrageous, and there is a large number of games with NA's for price, I want to see what are the entries for both of these cases (extremely expensive and `original_price == NA`).
+
+The max price seems a bit outrageous, and there is a large number of games with NA's for price, I want to see what are the entries for both of these cases (extremely expensive & `original_price == NA`).
 
 ```{r}
 steam_data %>%
-  filter(original_price > 10000)
+  filter(original_price > 10000) #ridiculously expensive
 ```
 
-So I looked this game up and the price doesn't match up, its 14.99 USD on Steam so I'll just replace the wrong price with the real one.
+There is only one entry and I looked this game up and the price doesn't match up, its 14.99 USD on Steam so I'll just replace the wrong price with the real one on the `steam_data` tibble.
 
 ```{r}
 steam_data[steam_data == 650560] <- 14.99
 ```
 
-Now for the NA values I'm wondering if they're actually free games or if the value is just missing, if they're free games then I'll just replace the NA for a zero, if not then I'll just drop those rows. 
+Now for the NA values I'm wondering if they're actually free games or if the value is just missing, if they're free games then I'll just replace the NA for a zero, if not then I'll just drop those rows.
 
 ```{r}
 steam_data %>%
   filter(is.na(original_price))
 ```
-So from looking some of these games up they're not free games, at least not all, so for simplicties sake I'll drop them...
+
+From looking some of these games up they're not free games, at least not all, so for simplicity's sake I'll drop them...
 
 ```{r}
 steam_data <- steam_data %>% filter(!is.na(original_price))
 ```
+
+Now here is the resulting density plot:
 
 ```{r}
 steam_data %>%
@@ -296,27 +314,37 @@ steam_data %>%
   geom_density(aes(y=after_stat(count)))
 ```
 
-There seem to be some games above the 500 price-point that act as outliers, not allowing to see the bulk of the most common prices. 
+However, there seem to be some games above the 500 price-point that act as outliers, not allowing to see the bulk of the most common prices.
 
 ```{r}
 steam_data %>% filter(original_price > 500)
 ```
 
-Most of these games have repeated prices, and they also appear to be DLCs not games themselves, maybe the data is not as clean as I thought it was... Again, for simplicities sake I'll remove those entries.
+Most of these games have repeated prices which makes me think that it may have been a mistake during the data collection/compilation. They also appear to be DLCs not games themselves, maybe the data is not as clean as I thought it was... Again, for simplicity's sake I'll remove those entries.
 
 ```{r}
 steam_data <- steam_data %>% filter(original_price < 500) 
 ```
 
+For the final distribution plot, I'll use a logarithmic scale on the x-axis, without it the values are all compressed to the left side of the plot and it's harder to read. However, since there are many free games (`original_price == 0`) I'll have to make use of the `log1p()` transformation which adds a 1 to all values so we can depict the 0 on the plot (recall that `log(0)` returns `-Inf`).
+
 ```{r}
 steam_data %>%
   ggplot(aes(original_price)) +
-  geom_density(aes(y=after_stat(count)), fill = "pink", colour = "pink", alpha = 0.5) +
-  scale_x_continuous(trans = scales::pseudo_log_trans(base = 10), labels = scales::dollar_format(), breaks = c(0,1,2,5,10,20,50,100,200,400)) +
+  geom_density(aes(y = after_stat(count)), 
+               fill = "pink", 
+               colour = "pink", 
+               alpha = 0.3) +
+  scale_x_continuous(trans = scales::log1p_trans(), 
+                     # change labes to dollar format
+                     labels = scales::dollar_format(), 
+                     # custom axis breaks to show the values better
+                     breaks = c(0,1,2.5,5,10,20,50,100,200,400)) + 
   ylab("Number of games") +
   xlab("Original Price (USD)") +
-  theme_light()
+  theme_bw()
 ```
+
 <!----------------------------------------------------------------------------->
 
 # Task 3: Choose research questions
@@ -324,13 +352,12 @@ steam_data %>%
 **(4 points)** So far, you have chosen a dataset and gotten familiar with it through exploring the data. You have also brainstormed one research question that interested you (Task 1.4). Now it's time to pick 4 research questions that you would like to explore in Milestone 2! Write the 4 questions and any additional comments below.
 
 <!--- *****START HERE***** --->
-
 1.  what genre has the most games? how has that changed across the years?
 2.  do developers (or publishers) tend to stick with the same genres?
 3.  what is the structure or relationship between genres?
-4.  is there any relation between genre and rating? 
+4.  is there any relation between genre and rating?
 
-I'm interested especially in exploring and analyzing video game genre. I didn't explore it in this milestone because I'd have to keep myself from answering all the research questions now and have nothing to do in the next milestone.😅
+So I'm interested especially in exploring and analyzing video game genres and their relationship with other variables. 
 
 <!----------------------------->
 
