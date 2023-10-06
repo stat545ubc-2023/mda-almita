@@ -221,7 +221,7 @@ steam_data <- steam_games %>%
   filter(release_month %in% month_order) %>%
   filter(release_year <= 2019) %>%
   # select a few columns of interest
-  select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher, original_price)
+  select(name, genre, release_date, release_month, release_year, original_price, all_reviews, developer, publisher)
 ```
 
 To be able to order months chronologically, we can convert `release_month` from string to an ordered factor column using the `month_order` vector.
