@@ -308,7 +308,7 @@ steam_data <- steam_data %>% filter(!is.na(original_price))
 
 Now here is the resulting density plot:
 
-```{r}
+```{r first density plot}
 steam_data %>%
   ggplot(aes(original_price)) +
   geom_density(aes(y=after_stat(count)))
@@ -328,7 +328,7 @@ steam_data <- steam_data %>% filter(original_price < 500)
 
 For the final distribution plot, I'll use a logarithmic scale on the x-axis, without it the values are all compressed to the left side of the plot and it's harder to read. However, since there are many free games (`original_price == 0`) I'll have to make use of the `log1p()` transformation which adds a 1 to all values so we can depict the 0 on the plot (recall that `log(0)` returns `-Inf`).
 
-```{r}
+```{r final density plot}
 steam_data %>%
   ggplot(aes(original_price)) +
   geom_density(aes(y = after_stat(count)), 
@@ -344,6 +344,7 @@ steam_data %>%
   xlab("Original Price (USD)") +
   theme_bw()
 ```
+So according to the plot, the bulk of the games are below the \$20 price point. 
 
 <!----------------------------------------------------------------------------->
 
