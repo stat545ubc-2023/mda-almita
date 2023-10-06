@@ -212,7 +212,7 @@ steam_data <- steam_games %>%
   filter(release_month %in% month_order) %>%
   filter(release_year <= 2019) %>%
   # select a few columns of interest
-  select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher, original_price)
+  select(name, genre, release_date, release_month, release_year, all_reviews, developer, publisher, original_price, discount_price, url)
 ```
 To be able to order months chronologically, we can convert `release_month` from string to an ordered factor column. 
 
@@ -260,21 +260,63 @@ We can see there are two "peaks" in game releases the first during March-May and
 
 ## Use a density plot to explore any of your variables
 
-I'd like to explore the distribution of game prices across steam, so I'll make a density plot to visualize it. First I need to remove `NA` values, then make the plot
+I'd like to explore the distribution of game prices across steam, so I'll make a density plot to visualize it. But before that I want to explore a bit more the price column:
 
 ```{r}
-min(steam_games$original_price, na.rm = TRUE)
-max(steam_games$original_price, na.rm = TRUE)
+summary(steam_data$original_price)
+```
+So the max price seems a bit outrageous, and there is a large number of games with NA's for price, I want to see what are the entries for both of these cases (extremely expensive and `original_price == NA`).
+
+```{r}
+steam_data %>%
+  filter(original_price > 10000)
+```
+
+So I looked this game up and the price doesn't match up, its 14.99 USD on Steam so I'll just replace the wrong price with the real one.
+
+```{r}
+steam_data[steam_data == 650560] <- 14.99
+```
+
+Now for the NA values I'm wondering if they're actually free games or if the value is just missing, if they're free games then I'll just replace the NA for a zero, if not then I'll just drop those rows. 
+
+```{r}
+steam_data %>%
+  filter(is.na(original_price))
+```
+So from looking some of these games up they're not free games, at least not all, so for simplicties sake I'll drop them...
+
+```{r}
+steam_data <- steam_data %>% filter(!is.na(original_price))
 ```
 
 ```{r}
-steam_games %>%
-  filter(!is.na(original_price)) %>%
-  ggplot(aes(x = log10(original_price + 1), na.rm = TRUE)) +
-  geom_density()
+steam_data %>%
+  ggplot(aes(original_price)) +
+  geom_density(aes(y=after_stat(count)))
 ```
 
+There seem to be some games above the 500 price-point that act as outliers, not allowing to see the bulk of the most common prices. 
 
+```{r}
+steam_data %>% filter(original_price > 500)
+```
+
+Most of these games have repeated prices, and they also appear to be DLCs not games themselves, maybe the data is not as clean as I thought it was... Again, for simplicities sake I'll remove those entries.
+
+```{r}
+steam_data <- steam_data %>% filter(original_price < 500) 
+```
+
+```{r}
+steam_data %>%
+  ggplot(aes(original_price)) +
+  geom_density(aes(y=after_stat(count)), fill = "pink", colour = "pink", alpha = 0.5) +
+  scale_x_continuous(trans = scales::pseudo_log_trans(base = 10), labels = scales::dollar_format(), breaks = c(0,1,2,5,10,20,50,100,200,400)) +
+  ylab("Number of games") +
+  xlab("Original Price (USD)") +
+  theme_light()
+```
 <!----------------------------------------------------------------------------->
 
 # Task 3: Choose research questions
