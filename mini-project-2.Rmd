@@ -84,14 +84,16 @@ From milestone 1, you should have an idea of the basic structure of your dataset
 
 ### 1.1 (1 point) 
 
-First, write out the 4 research questions you defined in milestone 1 were. This will guide your work through milestone 2:
+First, write out the 4 research questions:
 
 <!-------------------------- Start your work below ---------------------------->
-1. *FILL_THIS_IN*
-2. *FILL_THIS_IN*
-3. *FILL_THIS_IN*
-4. *FILL_THIS_IN*
+1. how has genre popularity changed across time?
+2. do developers tend to stick to the same genres?
+3. how does metacritic score relate to player ratings?
+4. does the price determine the quality/reviews of a game?
 <!----------------------------------------------------------------------------->
+
+I changed my research questions stated on milestone 1 to better fit the tasks for this milestone.
 
 Here, we will investigate your data using various data manipulation and graphing functions.
 
