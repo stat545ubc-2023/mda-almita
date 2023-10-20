@@ -7,14 +7,14 @@ output: github_document
 
 # Welcome to the rest of your mini data analysis project!
 
-In Milestone 1, you explored your data. and came up with research questions. This time, we will finish up our mini data analysis and obtain results for your data by: 
+In Milestone 1, you explored your data. and came up with research questions. This time, we will finish up our mini data analysis and obtain results for your data by:
 
-- Making summary tables and graphs 
-- Manipulating special data types in R: factors and/or dates and times.
+-   Making summary tables and graphs
+-   Manipulating special data types in R: factors and/or dates and times.
 -   Fitting a model object to your data, and extract a result.
 -   Reading and writing data as separate files.
 
-We will also explore more in depth the concept of *tidy data.* 
+We will also explore more in depth the concept of *tidy data.*
 
 **NOTE**: The main purpose of the mini data analysis is to integrate what you learn in class in an analysis. Although each milestone provides a framework for you to conduct your analysis, it's possible that you might find the instructions too rigid for your data set. If this is the case, you may deviate from the instructions -- just make sure you're demonstrating a wide range of tools and techniques taught in this class.
 
@@ -24,7 +24,7 @@ We will also explore more in depth the concept of *tidy data.*
 
 **To submit this milestone**, make sure to knit this `.Rmd` file to an `.md` file by changing the YAML output settings from `output: html_document` to `output: github_document`. Commit and push all of your work to your mini-analysis GitHub repository, and tag a release on GitHub. Then, submit a link to your tagged release on canvas.
 
-**Points**: This milestone is worth 50 points: 45 for your analysis, and 5 for overall reproducibility, cleanliness, and coherence of the Github submission. 
+**Points**: This milestone is worth 50 points: 45 for your analysis, and 5 for overall reproducibility, cleanliness, and coherence of the Github submission.
 
 **Research Questions**: In Milestone 1, you chose two research questions to focus on. Wherever realistic, your work in this milestone should relate to these research questions whenever we ask for justification behind your work. In the case that some tasks in this milestone don't align well with one of your research questions, feel free to discuss your results in the context of a different research question.
 
@@ -41,14 +41,15 @@ By the end of this milestone, you should:
 # Setup
 
 Begin by loading your data and the tidyverse package below:
+
 ```{r}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 library(tidyverse)
 ```
 
-
 ## Dataset creation
-After working on the mini data analysis milestone 1 and reading the requirements for milestone 2, I decided to change the dataset I was working on to better adjust to the tasks and exercises in the project. I stuck to the same theme (Steam Games) however I looked for datasets with different variables (especially numeric ones that can be used for model fitting) to build a new dataset. I landed on the [Steam Store Games](https://www.kaggle.com/datasets/nikdavis/steam-store-games) dataset from Nik Davis on Kaggle (renamed to `steam-kaggle.csv`), and [Steam Game Data](https://data.world/craigkelly/steam-game-data) (the `game-features.csv` set) from Craig Kelly on data.world. The procedure for creating the dataset is shown below: 
+
+After working on the mini data analysis milestone 1 and reading the requirements for milestone 2, I decided to change the dataset I was working on to better adjust to the tasks and exercises in the project. I stuck to the same theme (Steam Games) however I looked for datasets with different variables (especially numeric ones that can be used for model fitting) to build a new dataset. I landed on the [Steam Store Games](https://www.kaggle.com/datasets/nikdavis/steam-store-games) dataset from Nik Davis on Kaggle (renamed to `steam-kaggle.csv`), and [Steam Game Data](https://data.world/craigkelly/steam-game-data) (the `game-features.csv` set) from Craig Kelly on data.world. The procedure for creating the dataset is shown below:
 
 ```{r}
 # import both files
@@ -78,20 +79,20 @@ write_csv(steam, "data/steam.csv")
 
 ```
 
-# Task 1: Process and summarize your data 
+# Task 1: Process and summarize your data
 
-From milestone 1, you should have an idea of the basic structure of your dataset (e.g. number of rows and columns, class types, etc.). Here, we will start investigating your data more in-depth using various data manipulation functions. 
+From milestone 1, you should have an idea of the basic structure of your dataset (e.g. number of rows and columns, class types, etc.). Here, we will start investigating your data more in-depth using various data manipulation functions.
 
-### 1.1 (1 point) 
+### 1.1 (1 point)
 
 First, write out the 4 research questions:
 
 <!-------------------------- Start your work below ---------------------------->
-1. how has genre popularity changed across time?
-2. do developers tend to stick to the same genres?
-3. how does metacritic score relate to player ratings?
-4. does the price determine the quality/reviews of a game?
-<!----------------------------------------------------------------------------->
+
+1.  how has genre popularity changed across time?
+2.  do developers tend to stick to the same genres?
+3.  how does metacritic score relate to player ratings?
+4.  does the price determine the quality/reviews of a game? <!----------------------------------------------------------------------------->
 
 I changed my research questions stated on milestone 1 to better fit the tasks for this milestone.
 
@@ -110,21 +111,56 @@ Also make sure that you're using dplyr and ggplot2 rather than base R. Outside o
 1.  Compute the *range*, *mean*, and *two other summary statistics* of **one numerical variable** across the groups of **one categorical variable** from your data.
 2.  Compute the number of observations for at least one of your categorical variables. Do not use the function `table()`!
 3.  Create a categorical variable with 3 or more groups from an existing numerical variable. You can use this new variable in the other tasks! *An example: age in years into "child, teen, adult, senior".*
-4. Compute the proportion and counts in each category of one categorical variable across the groups of another categorical variable from your data. Do not use the function `table()`!
+4.  Compute the proportion and counts in each category of one categorical variable across the groups of another categorical variable from your data. Do not use the function `table()`!
 
 **Graphing:**
 
-6. Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read.
-7. Make a graph where it makes sense to customize the alpha transparency.
+6.  Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read.
+7.  Make a graph where it makes sense to customize the alpha transparency.
 
-Using variables and/or tables you made in one of the "Summarizing" tasks: 
+Using variables and/or tables you made in one of the "Summarizing" tasks:
 
-8. Create a graph that has at least two geom layers. 
-9. Create 3 histograms, with each histogram having different sized bins. Pick the "best" one and explain why it is the best.
+8.  Create a graph that has at least two geom layers.
+9.  Create 3 histograms, with each histogram having different sized bins. Pick the "best" one and explain why it is the best.
 
 Make sure it's clear what research question you are doing each operation for!
 
 <!------------------------- Start your work below ----------------------------->
+
+#### How has genre popularity changed across time?
+
+##### Summarising
+
+*(2) Compute the number of observations for at least one of your categorical variables.*
+For this task I will have to split up the `genres` for each game entry, as some of them have different genres assigned to them. I will do the same to `steamspy_tags` to compare, as I believe they are more descriptive.
+
+```{r}
+unique(steam$genres)[1:10]
+unique(steam$steamspy_tags)[1:10]
+```
+To separate the columns I will use the `separate_rows()` function from `tidyr` with a `;` character as delimiter. 
+
+```{r}
+steam_separate <- steam %>%
+  separate_rows(genres, sep = ";") %>%
+  separate_rows(steamspy_tags, sep = ";") 
+
+unique(steam_separate$genres)
+unique(steam_separate$steamspy_tags)[1:20]
+```
+Now to get the number of occurrences of each categorical value:
+
+```{r}
+steam_separate %>%
+  count(genres, sort = TRUE) 
+
+steam_separate %>%
+  count(steamspy_tags, sort = TRUE)
+```
+
+
+##### Graphing
+(8) Create a graph that has at least two geom layers
 
 <!----------------------------------------------------------------------------->
 
@@ -134,10 +170,9 @@ Based on the operations that you've completed, how much closer are you to answer
 
 <!------------------------- Write your answer here ---------------------------->
 
-
 <!----------------------------------------------------------------------------->
 
-# Task 2: Tidy your data 
+# Task 2: Tidy your data
 
 In this task, we will do several exercises to reshape our data. The goal here is to understand how to do this reshaping with the `tidyr` package.
 
@@ -186,7 +221,7 @@ Explain your decision for choosing the above two research questions.
 
 Now, try to choose a version of your data that you think will be appropriate to answer these 2 questions. Use between 4 and 8 functions that we've covered so far (i.e. by filtering, cleaning, tidy'ing, dropping irrelevant columns, etc.).
 
-(If it makes more sense, then you can make/pick two versions of your data, one for each research question.) 
+(If it makes more sense, then you can make/pick two versions of your data, one for each research question.)
 
 <!--------------------------- Start your work below --------------------------->
 
@@ -255,15 +290,15 @@ Write your model object from Task 3 to an R binary file (an RDS), and load it ag
 
 <!----------------------------------------------------------------------------->
 
-# Overall Reproducibility/Cleanliness/Coherence Checklist 
+# Overall Reproducibility/Cleanliness/Coherence Checklist
 
 Here are the criteria we're looking for.
 
 ## Coherence (0.5 points)
 
-The document should read sensibly from top to bottom, with no major continuity errors. 
+The document should read sensibly from top to bottom, with no major continuity errors.
 
-The README file should still satisfy the criteria from the last milestone, i.e. it has been updated to match the changes to the repository made in this milestone. 
+The README file should still satisfy the criteria from the last milestone, i.e. it has been updated to match the changes to the repository made in this milestone.
 
 ## File and folder structure (1 points)
 
@@ -277,7 +312,7 @@ Every level-1 folder (that is, the ones stored in the top level, like "Milestone
 
 All output is recent and relevant:
 
--   All Rmd files have been `knit`ted to their output md files. 
+-   All Rmd files have been `knit`ted to their output md files.
 -   All knitted md files are viewable without errors on Github. Examples of errors: Missing plots, "Sorry about that, but we can't show files that are this big right now" messages, error messages from broken R code
 -   All of these output files are up-to-date -- that is, they haven't fallen behind after the source (Rmd) files have been updated.
 -   There should be no relic output files. For example, if you were knitting an Rmd to html, but then changed the output to be only a markdown file, then the html file is a relic and should be deleted.
@@ -286,7 +321,7 @@ Our recommendation: delete all output files, and re-knit each milestone's Rmd fi
 
 ## Tagged release (0.5 point)
 
-You've tagged a release for Milestone 2. 
+You've tagged a release for Milestone 2.
 
 ### Attribution
 
