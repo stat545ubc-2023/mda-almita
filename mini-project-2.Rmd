@@ -1,6 +1,6 @@
 ---
 title: "Mini Data Analysis Milestone 2"
-output: html_document
+output: github_document
 ---
 
 *To complete this milestone, you can either edit [this `.rmd` file](https://raw.githubusercontent.com/UBC-STAT/stat545.stat.ubc.ca/master/content/mini-project/mini-project-2.Rmd) directly. Fill in the sections that are commented out with `<!--- start your work here--->`. When you are done, make sure to knit to an `.md` file by changing the output in the YAML header to `github_document`, before submitting a tagged release on canvas.*
@@ -41,10 +41,41 @@ By the end of this milestone, you should:
 # Setup
 
 Begin by loading your data and the tidyverse package below:
-
-```{r, message = FALSE}
-library(datateachr) # <- might contain the data you picked!
+```{r}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 library(tidyverse)
+```
+
+
+## Dataset creation
+After working on the mini data analysis milestone 1 and reading the requirements for milestone 2, I decided to change the dataset I was working on to better adjust to the tasks and exercises in the project. I stuck to the same theme (Steam Games) however I looked for datasets with different variables (especially numeric ones that can be used for model fitting) to build a new dataset. I landed on the [Steam Store Games](https://www.kaggle.com/datasets/nikdavis/steam-store-games) dataset from Nik Davis on Kaggle (renamed to `steam-kaggle.csv`), and [Steam Game Data](https://data.world/craigkelly/steam-game-data) (the `game-features.csv` set) from Craig Kelly on data.world. The procedure for creating the dataset is shown below: 
+
+```{r}
+# import both files
+steam_1_raw <- read_delim("data/steam-kaggle.csv", ",")
+steam_2_raw <- read_delim("data/games-features.csv", ",")
+
+# remove some columns like owners (which we will replace with the game-features set one) and others
+steam_1 <- steam_1_raw %>%
+  select(-c(owners, required_age, english))
+
+# select columns of interest from steam_2_raw and rename them to match snake case
+steam_2 <- steam_2_raw %>%
+  select(QueryID, Metacritic, SteamSpyOwners, SteamSpyOwnersVariance) %>%
+  rename(appid = QueryID,
+         metacritic = Metacritic,
+         owners = SteamSpyOwners,
+         owners_variance = SteamSpyOwnersVariance)
+
+# create final dataset
+steam <- steam_1 %>%
+  left_join(steam_2, by = "appid")
+
+head(steam)
+
+# exporting the dataset file
+write_csv(steam, "data/steam.csv")
+
 ```
 
 # Task 1: Process and summarize your data 
