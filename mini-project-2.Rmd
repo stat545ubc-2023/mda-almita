@@ -166,6 +166,11 @@ steam_separate <- steam_separate %>%
 steam_separate %>%
   count(release_year)
 ```
+```{r}
+steam_separate %>%
+  count(release_year, genres)
+```
+
 
 Now to get the number of occurrences for the other two categorical variables:
 
@@ -180,14 +185,51 @@ steam_separate %>%
 ##### Graphing
 *(8) Create a graph that has at least two geom layers*
 
-For this task I want to create a stream chart using the `ggstream` package for `ggplot`
+For this task I want to create a stream chart using the `ggstream` package for `ggplot`. 
 
 ```{r}
 library(ggstream)
 ```
 
-```{r}
+I will probably only graph the top n genres and tags for better visualization. For that I will create a vector to filter with.
 
+```{r}
+top_genres <- steam_separate %>%
+  count(genres, sort = TRUE) %>%
+  slice_head(n = 11)
+
+top_tags <- steam_separate %>%
+  count(steamspy_tags, sort = TRUE) %>%
+  slice_head(n = 11)
+
+```
+
+
+```{r}
+pal = c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF")
+
+```
+
+```{r}
+steam_separate %>%
+  count(release_year, genres) %>%
+  group_by(release_year) %>%
+  mutate(percentage = n/sum(n)) %>%
+  filter(genres %in% top_genres$genres) %>%
+  ggplot(aes(release_year, percentage, fill = genres)) +
+  scale_fill_manual(values = pal) +
+  geom_stream(bw = 0.9) +
+  theme_minimal()
+```
+
+
+```{r}
+steam_separate %>%
+  group_by(release_year, genres) %>%
+  reframe(number_of_games = n()) %>%
+  ggplot(aes(release_year, number_of_games, fill = genres)) +
+  geom_stream() +
+  theme_minimal()
 ```
 
 
