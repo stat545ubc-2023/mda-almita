@@ -132,7 +132,12 @@ Make sure it's clear what research question you are doing each operation for!
 ##### Summarising
 
 *(2) Compute the number of observations for at least one of your categorical variables.*
-For this task I will have to split up the `genres` for each game entry, as some of them have different genres assigned to them. I will do the same to `steamspy_tags` to compare, as I believe they are more descriptive.
+For this task I will determine the number of observations of the following variables:
+- `genres`
+- `steamspy_tags`
+- `release_year` (not exactly categorical but relevant to the research question)
+
+For that I will have to split up the `genres` and the `steamspy_tags` for each game entry, as some of them have different genres/tags assigned to them (see chunk below). I will also need to create a new column called `release_year` from `release_date`.
 
 ```{r}
 unique(steam$genres)[1:10]
@@ -148,7 +153,21 @@ steam_separate <- steam %>%
 unique(steam_separate$genres)
 unique(steam_separate$steamspy_tags)[1:20]
 ```
-Now to get the number of occurrences of each categorical value:
+For the `release_year` column I will use the `year()` function from the `lubridate` package.
+
+```{r}
+library(lubridate)
+```
+
+```{r}
+steam_separate <- steam_separate %>%
+  mutate(release_year = year(release_date))
+
+steam_separate %>%
+  count(release_year)
+```
+
+Now to get the number of occurrences for the other two categorical variables:
 
 ```{r}
 steam_separate %>%
@@ -158,9 +177,19 @@ steam_separate %>%
   count(steamspy_tags, sort = TRUE)
 ```
 
-
 ##### Graphing
-(8) Create a graph that has at least two geom layers
+*(8) Create a graph that has at least two geom layers*
+
+For this task I want to create a stream chart using the `ggstream` package for `ggplot`
+
+```{r}
+library(ggstream)
+```
+
+```{r}
+
+```
+
 
 <!----------------------------------------------------------------------------->
 
