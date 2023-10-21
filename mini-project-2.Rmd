@@ -43,7 +43,6 @@ By the end of this milestone, you should:
 Begin by loading your data and the tidyverse package below:
 
 ```{r}
-knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 library(tidyverse)
 ```
 
@@ -127,12 +126,12 @@ Make sure it's clear what research question you are doing each operation for!
 
 <!------------------------- Start your work below ----------------------------->
 
-#### How has genre popularity changed across time?
+#### RQ1 - How has genre popularity changed across time?
 
 ##### Summarising
 
 *(2) Compute the number of observations for at least one of your categorical variables.*
-For this task I will determine the number of observations of the following variables:
+To determine the popularity of each genre or tags across time we first need to determine the number of observations of each variable. For this task I will determine the number of observations of the following variables:
 - `genres`
 - `steamspy_tags`
 - `release_year` (not exactly categorical but relevant to the research question)
@@ -166,11 +165,6 @@ steam_separate <- steam_separate %>%
 steam_separate %>%
   count(release_year)
 ```
-```{r}
-steam_separate %>%
-  count(release_year, genres)
-```
-
 
 Now to get the number of occurrences for the other two categorical variables:
 
@@ -182,56 +176,177 @@ steam_separate %>%
   count(steamspy_tags, sort = TRUE)
 ```
 
+The data that helps respond the research question is also obtained the same way:
+
+```{r}
+steam_separate %>%
+  count(release_year, genres)
+
+steam_separate %>%
+  count(release_year, steamspy_tags)
+```
+
+
 ##### Graphing
 *(8) Create a graph that has at least two geom layers*
 
-For this task I want to create a stream chart using the `ggstream` package for `ggplot`. 
-
-```{r}
-library(ggstream)
-```
-
-I will probably only graph the top n genres and tags for better visualization. For that I will create a vector to filter with.
+I will be graphing the top 11 genres and top 16 tags for better visualization. Why such an arbitrary numbers? Because I noticed that the earliest genres (1997) had only 3 genres: `Action`, `Indie` and `Racing`. The first two are abundant enough throughout the dataset, however `Racing` is in the 11th place when ordered by number of observations, and I want to keep it to better represent those early games. For that I will create a vector to filter with.
 
 ```{r}
 top_genres <- steam_separate %>%
   count(genres, sort = TRUE) %>%
-  slice_head(n = 11)
+  slice_head(n = 11) %>%
+  pull(genres)
 
 top_tags <- steam_separate %>%
   count(steamspy_tags, sort = TRUE) %>%
-  slice_head(n = 11)
+  slice_head(n = 16) %>%
+  pull(steamspy_tags)
 
+print(top_genres)
+print(top_tags)
 ```
 
+I noticed that there are many `steamspy_tags` that are the same as `genres` so I will filter for only unique tags that don't duplicate steam `genres`. 
 
 ```{r}
-pal = c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF")
+top_unique_tags <- steam_separate %>%
+  filter(!steamspy_tags %in% genres) %>%
+  count(steamspy_tags, sort = TRUE) %>%
+  slice_head(n = 16) %>%
+  pull(steamspy_tags)
+
+print(top_unique_tags)
+```
+
+For this task I want to create a stream chart using the `ggstream` package for `ggplot`. To show the relative relationship between genres/tags for each year in a beautiful way. 
+
+```{r}
+library(ggstream)
+library("hues")
 
 ```
+
+I also will set a custom color palette for better category distinction (taken from two `MetBrewer` palettes):
+
+```{r}
+pal= c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF", "#92C051FF", "#2B9B81FF", "#1F6E9CFF", "#633372FF", "#E6A2A6FF", "#E87B89FF")
+swatch(pal)
+```
+
+Now to construct the graphs:
 
 ```{r}
 steam_separate %>%
+  # get observation counts and percentage of each genre for each year
   count(release_year, genres) %>%
   group_by(release_year) %>%
-  mutate(percentage = n/sum(n)) %>%
-  filter(genres %in% top_genres$genres) %>%
-  ggplot(aes(release_year, percentage, fill = genres)) +
+  mutate(percentage = 100*n/sum(n)) %>%
+  
+  # filter for top genres
+  filter(genres %in% top_genres) %>%
+  
+  # create plot
+  ggplot(aes(release_year, percentage, 
+             fill = genres, 
+             label = genres)) +
+  
+  # add lines for year marks
+  geom_vline(data = tibble(x = c(1997, seq(1998,2018,2), 2019), 1), 
+             aes(xintercept = x),
+             linetype = "dashed",
+             color = "#DCD3C5",
+             size = 0.3) +
+  scale_x_continuous(position = "top", 
+                     labels = c(1997, seq(1998,2018,2), 2019), 
+                     breaks = c(1997, seq(1998,2018,2), 2019))+
+  
+  # streamgraph
+  geom_stream(bw = 0.88, sorting = "onset") +
+  
+  # theme and visual stuff
   scale_fill_manual(values = pal) +
-  geom_stream(bw = 0.9) +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position = "right",
+        legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 9, 
+                                   color = "#93836C", 
+                                   angle = 45),
+        axis.text.x.top = element_text(margin = margin(b = 10)),
+        panel.grid = element_blank(),
+        legend.text = element_text(size = 9, color = "#1c1204"),
+        legend.spacing.y = unit(5,"pt"),
+        plot.margin = margin(rep(15, 4)),
+        plot.background = element_rect(fill = "#F1ECE4", color = NA),
+        panel.background = element_blank()) +
+  guides(fill = guide_legend(byrow = TRUE)) # added this so legend items separate from each other
 ```
-
 
 ```{r}
 steam_separate %>%
-  group_by(release_year, genres) %>%
-  reframe(number_of_games = n()) %>%
-  ggplot(aes(release_year, number_of_games, fill = genres)) +
-  geom_stream() +
-  theme_minimal()
+  # get observation counts and percentage of each tag for each year
+  count(release_year, steamspy_tags) %>%
+  group_by(release_year) %>%
+  mutate(percentage = 100*n/sum(n)) %>%
+  
+  # filter for top unique tags
+  filter(steamspy_tags %in% top_unique_tags) %>%
+  
+  # create plot
+  ggplot(aes(release_year, percentage, 
+             fill = steamspy_tags, 
+             label = steamspy_tags)) +
+  
+  # add lines for year marks
+  geom_vline(data = tibble(x = c(seq(1998,2018,2), 2019), 1), 
+             aes(xintercept = x),
+             linetype = "dashed",
+             color = "#DCD3C5",
+             size = 0.3) +
+  scale_x_continuous(position = "top", 
+                     labels = c(seq(1998,2018,2), 2019), 
+                     breaks = c(seq(1998,2018,2), 2019)) +
+  
+  # streamgraph
+  geom_stream(bw = 0.88, sorting = "onset") +
+  
+  # theme and visual stuff
+  scale_fill_manual(values = pal) +
+  theme_minimal() +
+  theme(legend.position = "right",
+        legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 9, 
+                                   color = "#93836C", 
+                                   angle = 45),
+        axis.text.x.top = element_text(margin = margin(b = 10)),
+        panel.grid = element_blank(),
+        legend.text = element_text(size = 9, color = "#1c1204"),
+        legend.spacing.y = unit(2,"pt"),
+        legend.key.size = unit(15, "pt"),
+        plot.margin = margin(rep(15, 4)),
+        plot.background = element_rect(fill = "#F1ECE4", color = NA),
+        panel.background = element_blank()) +
+  guides(fill = guide_legend(byrow = TRUE))
 ```
 
+#### RQ2
+
+##### Summarising
+##### Graphing
+
+#### RQ3
+##### Summarising
+##### Graphing
+
+#### RQ4
+##### Summarising
+##### Graphing
 
 <!----------------------------------------------------------------------------->
 
