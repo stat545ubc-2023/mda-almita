@@ -335,16 +335,16 @@ steam_separate %>%
   guides(fill = guide_legend(byrow = TRUE))
 ```
 
-#### RQ2
+#### RQ2 - Do developers tend to stick to the same genres?
 
 ##### Summarising
 ##### Graphing
 
-#### RQ3
+#### RQ3 - How does metacritic score relate to player ratings?
 ##### Summarising
 ##### Graphing
 
-#### RQ4
+#### RQ4 - Does the price determine the quality/reviews of a game?
 ##### Summarising
 ##### Graphing
 
