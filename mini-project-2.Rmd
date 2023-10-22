@@ -87,6 +87,7 @@ From milestone 1, you should have an idea of the basic structure of your dataset
 First, write out the 4 research questions:
 
 <!-------------------------- Start your work below ---------------------------->
+
 1.  how has genre popularity changed across time?
 2.  do developers tend to stick to the same types of games?
 3.  how does metacritic score relate to player ratings?
@@ -130,10 +131,8 @@ Make sure it's clear what research question you are doing each operation for!
 ##### Summarising
 
 *(2) Compute the number of observations for at least one of your categorical variables.*
-To determine the popularity of each genre or tags across time we first need to determine the number of observations of each variable. For this task I will determine the number of observations of the following variables:
-- `genres`
-- `steamspy_tags`
-- `release_year` (not exactly categorical but relevant to the research question)
+
+To determine the popularity of each genre or tags across time we first need to determine the number of observations of each variable. For this task I will determine the number of observations of the following variables: - `genres` - `steamspy_tags` - `release_year` (not exactly categorical but relevant to the research question)
 
 For that I will have to split up the `genres` and the `steamspy_tags` for each game entry, as some of them have different genres/tags assigned to them (see chunk below). I will also need to create a new column called `release_year` from `release_date`.
 
@@ -142,7 +141,7 @@ unique(steam$genres)[1:10]
 unique(steam$steamspy_tags)[1:10]
 ```
 
-To separate the columns I will use the `separate_rows()` function from `tidyr` with a `;` character as delimiter. 
+To separate the columns I will use the `separate_rows()` function from `tidyr` with a `;` character as delimiter.
 
 ```{r}
 steam_rq1 <- steam %>%
@@ -152,6 +151,7 @@ steam_rq1 <- steam %>%
 unique(steam_rq1$genres)
 unique(steam_rq1$steamspy_tags)[1:20]
 ```
+
 For the `release_year` column I will use the `year()` function from the `lubridate` package.
 
 ```{r}
@@ -186,8 +186,8 @@ steam_rq1 %>%
   count(release_year, steamspy_tags)
 ```
 
-
 ##### Graphing
+
 *(8) Create a graph that has at least two geom layers*
 
 I will be graphing the top 11 genres and top 16 tags for better visualization. Why such an arbitrary numbers? Because I noticed that the earliest genres (1997) had only 3 genres: `Action`, `Indie` and `Racing`. The first two are abundant enough throughout the dataset, however `Racing` is in the 11th place when ordered by number of observations, and I want to keep it to better represent those early games. For that I will create a vector to filter with.
@@ -207,7 +207,7 @@ print(top_genres)
 print(top_tags)
 ```
 
-I noticed that there are many `steamspy_tags` that are the same as `genres` so I will filter for only unique tags that don't duplicate steam `genres`. 
+I noticed that there are many `steamspy_tags` that are the same as `genres` so I will filter for only unique tags that don't duplicate steam `genres`.
 
 ```{r}
 top_unique_tags <- steam_rq1 %>%
@@ -219,7 +219,7 @@ top_unique_tags <- steam_rq1 %>%
 print(top_unique_tags)
 ```
 
-For this task I want to create a stream chart using the `ggstream` package for `ggplot`. To show the relative relationship between genres/tags for each year in a beautiful way. 
+For this task I want to create a stream chart using the `ggstream` package for `ggplot`. To show the relative relationship between genres/tags for each year in a beautiful way.
 
 ```{r}
 library(ggstream)
@@ -234,9 +234,7 @@ pal= c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0
 swatch(pal)
 ```
 
-Now to construct the graphs: 
-TODO explain why I used percentage and not counts
-TODO separate the tibble creation from the graphing
+Now to construct the graphs: TODO explain why I used percentage and not counts TODO separate the tibble creation from the graphing
 
 ```{r}
 steam_rq1 %>%
@@ -340,15 +338,17 @@ steam_rq1 %>%
 #### RQ2 - Do developers tend to stick to the same types of games?
 
 ##### Summarising
+
 *(4) Compute the proportion and counts in each category of one categorical variable across the groups of another categorical variable from your data.*
 
-To prep for this I need to do three things: 
+To prep for this I need to do three things:
 
-1. Separate the entries that have multiple game developers.
-3. Filter out genres and tags such as `Early Access`, `Free to Play`, and `Indie` , because they don't specify the **type** of game. For example, `Indie` will be applied to any small developer regardless of the type of game it is. 
-3. Merge the `genres` and `steamspy_tags` columns so that I don't have to do everything twice and we get a better picture on the type of games. 
+1.  Separate the entries that have multiple game developers.
+2.  Filter out genres and tags such as `Early Access`, `Free to Play`, and `Indie` , because they don't specify the **type** of game. For example, `Indie` will be applied to any small developer regardless of the type of game it is.
+3.  Merge the `genres` and `steamspy_tags` columns so that I don't have to do everything twice and we get a better picture on the type of games.
 
 Separating the entries and filtering:
+
 ```{r}
 steam_rq2 <- steam_rq1 %>%
   separate_rows(developer, sep = ";") %>%
@@ -377,8 +377,8 @@ Now we can compute the proportion and count of game types per developer:
   reframe(developer, game_type, n, proportion = n/sum(n)))
 ```
 
-
 ##### Graphing
+
 *(6) Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read.*
 
 ```{r}
@@ -439,7 +439,7 @@ steam_rq2_gamecount %>%
   length()
 ```
 
-131 is still too many, but I'm thinking of a fun solution, we could pick 20 random developers from those 131 and plot them. Why this instead of picking the top 20 developers with most games? Because I don't want to be biased towards big established developers :). 
+`131` is still too many, but I'm thinking of a fun solution, we could pick 20 random developers from those 131 and plot them. Why this instead of picking the top 20 developers with most games? Because I don't want to be biased towards big established developers :).
 
 ```{r}
 # note that this will choose different developers each time it is run
@@ -466,7 +466,6 @@ library(forcats)
 ```{r}
 pal2 <- c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF", "#92C051FF", "#2B9B81FF", "#014E65", "#1F6E9CFF", "#9BDFE2", "#CACAE0", "#633372FF", "#D960A2")
 ```
-
 
 ```{r}
 steam_rq2_gametype_count %>%
@@ -502,13 +501,60 @@ steam_rq2_gametype_count %>%
 ```
 
 #### RQ3 - How does metacritic score relate to player ratings?
+
 ##### Summarising
+
+*(3) Create a categorical variable with 3 or more groups from an existing numerical variable.*
+
+Steam's has two types of reviews: positive and negative. The percentage of the positive reviews and the number of reviews determines the final game review category. Steam hasn't disclosed the exact numbers so I will base off of the following table (based on u/runevision's [post on the r/Steam subreddit](https://www.reddit.com/r/Steam/comments/ivz45n/what_does_the_steam_ratings_like_very_negative_or/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button):
+
+| \% positive | number of reviews | review                  |
+|-------------|-------------------|-------------------------|
+| 95-100      | 500+              | Overwhelmingly Positive |
+| 80-100      | 50-499            | Very Positive           |
+| 80-94       | 500+              | Very Positive           |
+| 80-100      | 10-49             | Positive                |
+| 70-79       | 10+               | Mostly Positive         |
+| 40-60       | 10+               | Mixed                   |
+| 20-39       | 10+               | Mostly Negative         |
+| 0-19        | 10-49             | Negative                |
+| 0-19        | 50-499            | Very Negative           |
+| 0-19        | 500+              | Overwhelmingly Negative |
+
+So I will create a new variable `review` from the `positive_ratings` and `negative_ratings` variables. For that I will need to compute: `number_ratings` and `score` (percent of positive ratings). 
+
+```{r}
+review_labels <- c("Overwhelmingly Positive","Very Positive","Positive", "Mostly Positive", "Mixed", "Mostly Negative", "Negative", "Very Negative", "Overwhelmingly Negative")
+```
+
+
+```{r}
+steam_rq3 <- steam %>%
+  mutate(number_ratings = positive_ratings + negative_ratings,
+         score = 100 * positive_ratings / number_ratings,
+         review = case_when(
+           score >= 95 & number_ratings >= 500 ~ "Overwhelmingly Positive",
+           score >= 80 & number_ratings >= 500 ~ "Very Positive",
+           score >= 80 & number_ratings >= 50 ~  "Very Positive",
+           score >= 80 & number_ratings >= 10 ~  "Positive",
+           score >= 70 & number_ratings >= 10 ~ "Mostly Positive",
+           score >= 40 & number_ratings >= 10 ~ "Mixed",
+           score >= 20 & number_ratings >= 10 ~ "Mostly Negative",
+           score >= 0 & number_ratings >= 500 ~ "Overwhelmingly Negative",
+           score >= 0 & number_ratings >= 50 ~ "Very Negative",
+           score >= 10 & number_ratings >= 10 ~ "Negative",
+         ))
+
+steam_rq3 %>%
+  select(name, number_ratings, score, review)
+```
 
 ##### Graphing
 
-
 #### RQ4 - Does the price determine the quality/reviews of a game?
+
 ##### Summarising
+
 ##### Graphing
 
 <!----------------------------------------------------------------------------->
