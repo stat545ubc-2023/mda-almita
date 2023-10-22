@@ -87,9 +87,8 @@ From milestone 1, you should have an idea of the basic structure of your dataset
 First, write out the 4 research questions:
 
 <!-------------------------- Start your work below ---------------------------->
-
 1.  how has genre popularity changed across time?
-2.  do developers tend to stick to the same genres?
+2.  do developers tend to stick to the same types of games?
 3.  how does metacritic score relate to player ratings?
 4.  does the price determine the quality/reviews of a game? <!----------------------------------------------------------------------------->
 
@@ -142,15 +141,16 @@ For that I will have to split up the `genres` and the `steamspy_tags` for each g
 unique(steam$genres)[1:10]
 unique(steam$steamspy_tags)[1:10]
 ```
+
 To separate the columns I will use the `separate_rows()` function from `tidyr` with a `;` character as delimiter. 
 
 ```{r}
-steam_separate <- steam %>%
+steam_rq1 <- steam %>%
   separate_rows(genres, sep = ";") %>%
   separate_rows(steamspy_tags, sep = ";") 
 
-unique(steam_separate$genres)
-unique(steam_separate$steamspy_tags)[1:20]
+unique(steam_rq1$genres)
+unique(steam_rq1$steamspy_tags)[1:20]
 ```
 For the `release_year` column I will use the `year()` function from the `lubridate` package.
 
@@ -159,30 +159,30 @@ library(lubridate)
 ```
 
 ```{r}
-steam_separate <- steam_separate %>%
+steam_rq1 <- steam_rq1 %>%
   mutate(release_year = year(release_date))
 
-steam_separate %>%
+steam_rq1 %>%
   count(release_year)
 ```
 
 Now to get the number of occurrences for the other two categorical variables:
 
 ```{r}
-steam_separate %>%
+steam_rq1 %>%
   count(genres, sort = TRUE) 
 
-steam_separate %>%
+steam_rq1 %>%
   count(steamspy_tags, sort = TRUE)
 ```
 
-The data that helps respond the research question is also obtained the same way:
+The data that helps answer the research question is also obtained the same way:
 
 ```{r}
-steam_separate %>%
+steam_rq1 %>%
   count(release_year, genres)
 
-steam_separate %>%
+steam_rq1 %>%
   count(release_year, steamspy_tags)
 ```
 
@@ -193,12 +193,12 @@ steam_separate %>%
 I will be graphing the top 11 genres and top 16 tags for better visualization. Why such an arbitrary numbers? Because I noticed that the earliest genres (1997) had only 3 genres: `Action`, `Indie` and `Racing`. The first two are abundant enough throughout the dataset, however `Racing` is in the 11th place when ordered by number of observations, and I want to keep it to better represent those early games. For that I will create a vector to filter with.
 
 ```{r}
-top_genres <- steam_separate %>%
+top_genres <- steam_rq1 %>%
   count(genres, sort = TRUE) %>%
   slice_head(n = 11) %>%
   pull(genres)
 
-top_tags <- steam_separate %>%
+top_tags <- steam_rq1 %>%
   count(steamspy_tags, sort = TRUE) %>%
   slice_head(n = 16) %>%
   pull(steamspy_tags)
@@ -210,7 +210,7 @@ print(top_tags)
 I noticed that there are many `steamspy_tags` that are the same as `genres` so I will filter for only unique tags that don't duplicate steam `genres`. 
 
 ```{r}
-top_unique_tags <- steam_separate %>%
+top_unique_tags <- steam_rq1 %>%
   filter(!steamspy_tags %in% genres) %>%
   count(steamspy_tags, sort = TRUE) %>%
   slice_head(n = 16) %>%
@@ -224,20 +224,22 @@ For this task I want to create a stream chart using the `ggstream` package for `
 ```{r}
 library(ggstream)
 library("hues")
-
 ```
 
 I also will set a custom color palette for better category distinction (taken from two `MetBrewer` palettes):
 
 ```{r}
 pal= c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF", "#92C051FF", "#2B9B81FF", "#1F6E9CFF", "#633372FF", "#E6A2A6FF", "#E87B89FF")
+
 swatch(pal)
 ```
 
-Now to construct the graphs:
+Now to construct the graphs: 
+TODO explain why I used percentage and not counts
+TODO separate the tibble creation from the graphing
 
 ```{r}
-steam_separate %>%
+steam_rq1 %>%
   # get observation counts and percentage of each genre for each year
   count(release_year, genres) %>%
   group_by(release_year) %>%
@@ -256,7 +258,7 @@ steam_separate %>%
              aes(xintercept = x),
              linetype = "dashed",
              color = "#DCD3C5",
-             size = 0.3) +
+             linewidth = 0.3) +
   scale_x_continuous(position = "top", 
                      labels = c(1997, seq(1998,2018,2), 2019), 
                      breaks = c(1997, seq(1998,2018,2), 2019))+
@@ -286,7 +288,7 @@ steam_separate %>%
 ```
 
 ```{r}
-steam_separate %>%
+steam_rq1 %>%
   # get observation counts and percentage of each tag for each year
   count(release_year, steamspy_tags) %>%
   group_by(release_year) %>%
@@ -305,7 +307,7 @@ steam_separate %>%
              aes(xintercept = x),
              linetype = "dashed",
              color = "#DCD3C5",
-             size = 0.3) +
+             linewidth = 0.3) +
   scale_x_continuous(position = "top", 
                      labels = c(seq(1998,2018,2), 2019), 
                      breaks = c(seq(1998,2018,2), 2019)) +
@@ -335,14 +337,144 @@ steam_separate %>%
   guides(fill = guide_legend(byrow = TRUE))
 ```
 
-#### RQ2 - Do developers tend to stick to the same genres?
+#### RQ2 - Do developers tend to stick to the same types of games?
 
 ##### Summarising
+*(4) Compute the proportion and counts in each category of one categorical variable across the groups of another categorical variable from your data.*
+
+To prep for this I need to do three things: 
+
+1. Separate the entries that have multiple game developers.
+3. Filter out genres and tags such as `Early Access`, `Free to Play`, and `Indie` , because they don't specify the **type** of game. For example, `Indie` will be applied to any small developer regardless of the type of game it is. 
+3. Merge the `genres` and `steamspy_tags` columns so that I don't have to do everything twice and we get a better picture on the type of games. 
+
+Separating the entries and filtering:
+```{r}
+steam_rq2 <- steam_rq1 %>%
+  separate_rows(developer, sep = ";") %>%
+  filter(!genres %in% c("Early Access", "Indie") & !steamspy_tags %in% c("Early Access", "Indie") & !steamspy_tags %in% genres)
+
+head(steam_rq2, 10)
+```
+
+For merging `genres` and `steamspy_tags` into `game_type` I will use `pivot_longer`:
+
+```{r}
+(steam_rq2_longer <- steam_rq2 %>%
+  pivot_longer(cols = c(genres, steamspy_tags),
+               names_to = "category",
+               values_to = "game_type") %>%
+  select(developer, game_type, name, appid) %>%
+  distinct()) #for removing duplicated rows
+```
+
+Now we can compute the proportion and count of game types per developer:
+
+```{r}
+steam_rq2_longer %>% 
+  count(game_type, developer) %>% 
+  group_by(developer) %>%
+  reframe(developer, game_type, n, proportion = n/sum(n))
+```
+
+
 ##### Graphing
+*(6) Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read.*
+
+I would like to make a stacked barplot to help answer my research question, with the developers on the x-axis and the "relative abundance" of `game_type` in the y-axis, with colors to distinguish between `game_type`. However I'm thinking that I will probably need to select a number of developers to display, if not the graph will be too dense to make sense of.
+
+First lets figure out how many developers there are:
+
+```{r}
+
+```
+
+
+```{r}
+library(scales)
+```
+
+
+I'm thinking that I probably will need to select the number of developers to display, if not then the graph will be too dense to read.
+
+```{r}
+length(unique(dev_genres$developer))
+length(unique(dev_tags$developer))
+```
+
+Indeed, that is way too many developers, and that doesn't even consider that some games have multiple developers. So I will need to cutoff probably based on number of games released, visualizing the developers that have more games will probably answer better my research question. To decide the cutoff point I will make a histogram to see the number of games per developer distribution.
+
+First we will separate the rows that have multiple developers. Note that I'm doing this in the `steam` dataset and not `steam_rq1` because in `steam` each observation corresponds to a single game, whereas in `steam_rq1` we have repeated entries for each genre or tag a game has. However I will have to separate the developers later on when making the final graph. 
+
+```{r}
+steam_rq1_devs <- steam %>%
+  separate_rows(developer, sep = ";")
+
+head(steam_rq1_devs)
+```
+
+```{r}
+dev_count <- steam_rq1_devs %>%
+  count(developer, sort = TRUE)
+
+head(dev_count, 10)
+
+dev_count %>%
+  ggplot(aes(n)) +
+  geom_histogram(binwidth = 1, fill = "#93836C") +
+  theme_minimal() +
+  scale_x_continuous(breaks = c(1,seq(10,100,10))) +
+  scale_y_continuous(trans = scales::log1p_trans(),
+                     breaks = c(1, 2, 5, 10, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 15000, 20000)) +
+  xlab("Games per developer") +
+  ylab("Number of developers") +
+  theme(axis.text.y = element_text(size = 9, color = "#93836C"),
+        axis.text.x = element_text(size = 9, color = "#93836C"),
+        axis.title.y = element_text(color = "#93836C"),
+        axis.title.x = element_text(color = "#93836C"),
+        panel.grid.major.y = element_line(color = "#DCD3C5"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        plot.margin = margin(rep(15, 4)),
+        plot.background = element_rect(fill = "#F1ECE4", color = NA),
+        panel.background = element_blank())
+```
+
+So most of developers have only released 1 game, keeping them wouldn't make sense in the context of answering my research question. I will filter them out and see how many there are now.
+
+```{r}
+dev_count %>%
+  filter(n > 1) %>%
+  pull(developer) %>%
+  unique() %>%
+  length()
+```
+
+That is still too many, therefore I think the best strategy is to pick the 20 developers who have released the most games. Note that I previously ordered the dev_count tbl with the `count` function.
+
+```{r}
+top_devs <- dev_count %>%
+  slice_head(n = 20) %>%
+  pull(developer)
+
+print(top_devs)
+```
+Now that we got our top devs we can continue with the graphing.
+
+```{r}
+steam_rq1 %>%
+  separate_rows(developer, sep = ";") %>%
+  filter(developer %in% top_devs) %>%
+  
+```
+
 
 #### RQ3 - How does metacritic score relate to player ratings?
 ##### Summarising
+
 ##### Graphing
+
 
 #### RQ4 - Does the price determine the quality/reviews of a game?
 ##### Summarising
