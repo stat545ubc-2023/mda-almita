@@ -229,7 +229,7 @@ library("hues")
 I also will set a custom color palette for better category distinction (taken from two `MetBrewer` palettes):
 
 ```{r}
-pal= c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF", "#92C051FF", "#2B9B81FF", "#1F6E9CFF", "#633372FF", "#E6A2A6FF", "#E87B89FF")
+pal= c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF", "#92C051FF", "#2B9B81FF", "#1F6E9CFF","#633372FF", "#E6A2A6FF", "#E87B89FF")
 
 swatch(pal)
 ```
@@ -352,7 +352,7 @@ Separating the entries and filtering:
 ```{r}
 steam_rq2 <- steam_rq1 %>%
   separate_rows(developer, sep = ";") %>%
-  filter(!genres %in% c("Early Access", "Indie") & !steamspy_tags %in% c("Early Access", "Indie") & !steamspy_tags %in% genres)
+  filter(!genres %in% c("Early Access", "Indie", "Free to Play") & !steamspy_tags %in% c("Early Access", "Indie", "Free to Play") & !steamspy_tags %in% genres)
 
 head(steam_rq2, 10)
 ```
@@ -371,67 +371,56 @@ For merging `genres` and `steamspy_tags` into `game_type` I will use `pivot_long
 Now we can compute the proportion and count of game types per developer:
 
 ```{r}
-steam_rq2_longer %>% 
+(steam_rq2_gametype_count <- steam_rq2_longer %>% 
   count(game_type, developer) %>% 
   group_by(developer) %>%
-  reframe(developer, game_type, n, proportion = n/sum(n))
+  reframe(developer, game_type, n, proportion = n/sum(n)))
 ```
 
 
 ##### Graphing
 *(6) Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read.*
 
-I would like to make a stacked barplot to help answer my research question, with the developers on the x-axis and the "relative abundance" of `game_type` in the y-axis, with colors to distinguish between `game_type`. However I'm thinking that I will probably need to select a number of developers to display, if not the graph will be too dense to make sense of.
-
-First lets figure out how many developers there are:
-
-```{r}
-
-```
-
-
 ```{r}
 library(scales)
 ```
 
+I would like to make a stacked barplot to help answer my research question, with the developers on the x-axis and the "relative abundance" of `game_type` in the y-axis, with colors to distinguish between `game_type`. However I'm thinking that I will probably need to select a number of developers to display, if not the graph will be too dense to make sense of.
 
-I'm thinking that I probably will need to select the number of developers to display, if not then the graph will be too dense to read.
+First lets figure out how many developers we are working with (*note that this is different from the real number of developers in the steam dataset because we have filtered out some genres and tags for this task*):
 
 ```{r}
-length(unique(dev_genres$developer))
-length(unique(dev_tags$developer))
+length(unique(steam_rq2_longer$developer))
 ```
 
-Indeed, that is way too many developers, and that doesn't even consider that some games have multiple developers. So I will need to cutoff probably based on number of games released, visualizing the developers that have more games will probably answer better my research question. To decide the cutoff point I will make a histogram to see the number of games per developer distribution.
-
-First we will separate the rows that have multiple developers. Note that I'm doing this in the `steam` dataset and not `steam_rq1` because in `steam` each observation corresponds to a single game, whereas in `steam_rq1` we have repeated entries for each genre or tag a game has. However I will have to separate the developers later on when making the final graph. 
+That's way too many developers for the plot. I would also like to see the distribution of games per developer, to better understand what I'm working with and if I should set a cut-off point based on the number of games.
 
 ```{r}
-steam_rq1_devs <- steam %>%
-  separate_rows(developer, sep = ";")
-
-head(steam_rq1_devs)
+(steam_rq2_gamecount <- steam_rq2_longer %>%
+  select(developer, appid) %>%
+  group_by(developer) %>%
+  distinct() %>%
+  reframe(n = n()) %>%
+  arrange(desc(n)))
 ```
 
 ```{r}
-dev_count <- steam_rq1_devs %>%
-  count(developer, sort = TRUE)
-
-head(dev_count, 10)
-
-dev_count %>%
+steam_rq2_gamecount %>%
   ggplot(aes(n)) +
   geom_histogram(binwidth = 1, fill = "#93836C") +
   theme_minimal() +
-  scale_x_continuous(breaks = c(1,seq(10,100,10))) +
+  scale_x_continuous(breaks = c(1,seq(2,41,2))) +
   scale_y_continuous(trans = scales::log1p_trans(),
-                     breaks = c(1, 2, 5, 10, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 15000, 20000)) +
+                     breaks = c(1, 2, 5, 10, 50, 100, 250, 500, 1000, 2500, 5000),
+                     expand = c(0,0)) +
   xlab("Games per developer") +
   ylab("Number of developers") +
   theme(axis.text.y = element_text(size = 9, color = "#93836C"),
         axis.text.x = element_text(size = 9, color = "#93836C"),
         axis.title.y = element_text(color = "#93836C"),
         axis.title.x = element_text(color = "#93836C"),
+        axis.ticks.x = element_line(color = "#DCD3C5"),
+        axis.ticks.length.x = unit(10, "pt"),
         panel.grid.major.y = element_line(color = "#DCD3C5"),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
@@ -441,34 +430,76 @@ dev_count %>%
         panel.background = element_blank())
 ```
 
-So most of developers have only released 1 game, keeping them wouldn't make sense in the context of answering my research question. I will filter them out and see how many there are now.
+As we can see, most of the developers have only released 1 game, which won't do for visualizing the diversity of game types across developers. We can try to cut off at say 8 games, and see how many developers are left:
 
 ```{r}
-dev_count %>%
-  filter(n > 1) %>%
+steam_rq2_gamecount %>%
+  filter(n >= 8) %>%
   pull(developer) %>%
-  unique() %>%
   length()
 ```
 
-That is still too many, therefore I think the best strategy is to pick the 20 developers who have released the most games. Note that I previously ordered the dev_count tbl with the `count` function.
+131 is still too many, but I'm thinking of a fun solution, we could pick 20 random developers from those 131 and plot them. Why this instead of picking the top 20 developers with most games? Because I don't want to be biased towards big established developers :). 
 
 ```{r}
-top_devs <- dev_count %>%
+# note that this will choose different developers each time it is run
+
+(random_devs <- steam_rq2_gamecount %>%
+  filter(n>= 8) %>%
+  slice_sample(n = 20) %>%
+  pull(developer))
+```
+
+Now what I will need to select the top 20 of is top game types:
+
+```{r}
+(top_gametypes <- steam_rq2_longer %>% 
+  count(game_type, sort = TRUE) %>%
   slice_head(n = 20) %>%
-  pull(developer)
-
-print(top_devs)
+  pull(game_type))
 ```
-Now that we got our top devs we can continue with the graphing.
 
 ```{r}
-steam_rq1 %>%
-  separate_rows(developer, sep = ";") %>%
-  filter(developer %in% top_devs) %>%
-  
+library(forcats)
 ```
 
+```{r}
+pal2 <- c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF", "#92C051FF", "#2B9B81FF", "#014E65", "#1F6E9CFF", "#9BDFE2", "#CACAE0", "#633372FF", "#D960A2")
+```
+
+
+```{r}
+steam_rq2_gametype_count %>%
+  filter(developer %in% random_devs & game_type %in% top_gametypes) %>%
+  ggplot(aes(x = fct_rev(developer), 
+             y = n, 
+             fill = fct_reorder(game_type, n, .desc = TRUE)
+             )
+         ) +
+  geom_col(position = "fill", color = "#F1ECE4", linewidth = 1) +
+  scale_y_continuous(labels = scales::percent_format(),
+                     position = "right",
+                     expand = c(0,0)
+                     ) +
+  scale_x_discrete(expand = c(0,0)) +
+  ylab("Percent of games") +
+  xlab("Developer") +
+  scale_fill_manual(values = sample(pal2)) +
+  theme_minimal() +
+  theme(legend.position = c(0.25,-0.15),
+        legend.direction = "horizontal",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 9, color = "#93836C"),
+        legend.key.size = unit(12, "pt"),
+        axis.title.y = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.title.x = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.text.x = element_text(color = "#93836C", hjust = 0.5),
+        axis.text.y = element_text(color = "#93836C", vjust = 0.4),
+        plot.background = element_rect(fill = "#F1ECE4"),
+        panel.background = element_blank(),
+        plot.margin = margin(15, 15, 70, 15)) +
+  coord_flip() 
+```
 
 #### RQ3 - How does metacritic score relate to player ratings?
 ##### Summarising
