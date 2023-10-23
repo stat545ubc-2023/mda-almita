@@ -543,13 +543,49 @@ steam_rq3 <- steam %>%
            score >= 0 & number_ratings >= 500 ~ "Overwhelmingly Negative",
            score >= 0 & number_ratings >= 50 ~ "Very Negative",
            score >= 10 & number_ratings >= 10 ~ "Negative",
-         ))
+         )) %>%
+  filter(!is.na(review))
 
 steam_rq3 %>%
-  select(name, number_ratings, score, review)
+  select(name, number_ratings, score, review) %>%
+  head(10)
 ```
 
 ##### Graphing
+*(7) Make a graph where it makes sense to customize the alpha transparency.*
+
+```{r}
+steam_rq3 %>%
+  filter(metacritic > 0) %>%
+  ggplot(aes(metacritic, 
+             score, 
+             #color = fct_relevel(review, review_labels)
+             )) +
+  geom_jitter(aes(size = number_ratings), 
+              stroke = 0, 
+              color = "#301f07",
+              alpha = 0.5) +
+  scale_color_manual(values = pal3) +
+  scale_size(breaks = c(20, 1000, 50000, 300000),
+             range = c(1, 20), 
+             labels = scales::label_comma(),
+             name="Number of ratings") +
+  scale_x_continuous(limits = c(0,100)) +
+  ylab("Steam score") +
+  xlab("Metacritic score") +
+  theme_minimal() +
+  theme(legend.text = element_text(size = 9, color = "#93836C"),
+        legend.title = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.title.y = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.title.x = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.text.x = element_text(color = "#93836C", hjust = 0.5),
+        axis.text.y = element_text(color = "#93836C", vjust = 0.4),
+        panel.grid.major = element_line(color = "#DCD3C5"),
+        plot.background = element_rect(fill = "#F1ECE4"),
+        panel.background = element_blank(),
+        plot.margin = margin(rep(15,4)))
+```
+
 
 #### RQ4 - Does the price determine the quality/reviews of a game?
 
