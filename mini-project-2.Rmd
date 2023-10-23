@@ -616,6 +616,7 @@ steam_rq3 %>%
         panel.background = element_blank(),
         plot.margin = margin(rep(15,4)))
 ```
+TODO change label positions
 
 #### RQ4 - Does the price determine the quality/reviews of a game?
 
@@ -636,6 +637,49 @@ steam_rq3 %>%
 
 
 ##### Graphing
+
+
+```{r}
+pal4 <- c("#004B59", "#017692", "#2bd4cb", "#a7d5b2", "#92a5df", "#EBA3EA", "#F85F6F", "#ff7536", "#e7106c")
+```
+
+```{r}
+steam_rq4 <- steam_rq3 %>%
+  mutate(review = fct_relevel(review, review_labels),
+         review2 = review) %>%
+  filter(metacritic > 0)
+```
+
+
+```{r}
+steam_rq4 %>%
+  ggplot(aes(x = price, y = metacritic)) +
+  geom_jitter(data = steam_rq4 %>% select(-review), aes(group = review2, size = number_ratings), color="#DCD3C5", width = 0.1, alpha=0.4) +
+  geom_jitter(aes(color = review, size = number_ratings), width = 0.1) +
+  scale_size(breaks = c(20, 1000, 10000, 100000, 1000000),
+             range = c(0.4, 13), 
+             labels = scales::label_comma(),
+             name="Number of ratings") +
+  scale_x_continuous(trans = scales::log1p_trans(),
+                     breaks = c(0,1.5,5,20,60),
+                     labels = scales::dollar_format()) +
+  xlab("Price (USD)") +
+  ylab("Metacritic score") +
+  scale_color_manual(values = pal4) +
+  theme_minimal() +
+  guides(color = "none") +
+  theme(title = element_text(size = 9, face = "bold", color = "#93836C"),
+        strip.text = element_text(size = 8, color = "#93836C"),
+        legend.text = element_text(size = 9, color = "#93836C"),
+        legend.position = "bottom",
+        axis.text.x = element_text(size = 8, color = "#93836C", angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 8, color = "#93836C"),
+        panel.grid.major = element_line(color = "#DCD3C5", linewidth = 0.3),
+        plot.background = element_rect(fill = "#F1ECE4"),
+        panel.background = element_blank(),
+        plot.margin = margin(15,30,15,15)) +
+  facet_wrap(~review)
+```
 
 <!----------------------------------------------------------------------------->
 
