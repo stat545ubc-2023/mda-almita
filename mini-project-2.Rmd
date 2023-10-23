@@ -557,17 +557,13 @@ steam_rq3 %>%
 ```{r}
 steam_rq3 %>%
   filter(metacritic > 0) %>%
-  ggplot(aes(metacritic, 
-             score, 
-             #color = fct_relevel(review, review_labels)
-             )) +
+  ggplot(aes(metacritic, score)) +
   geom_jitter(aes(size = number_ratings), 
               stroke = 0, 
               color = "#301f07",
-              alpha = 0.5) +
-  scale_color_manual(values = pal3) +
-  scale_size(breaks = c(20, 1000, 50000, 300000),
-             range = c(1, 20), 
+              alpha = 0.4) +
+  scale_size(breaks = c(20, 500, 1000, 10000, 50000, 100000, 500000, 1000000, 3000000),
+             range = c(1.2, 20), 
              labels = scales::label_comma(),
              name="Number of ratings") +
   scale_x_continuous(limits = c(0,100)) +
@@ -585,11 +581,59 @@ steam_rq3 %>%
         panel.background = element_blank(),
         plot.margin = margin(rep(15,4)))
 ```
-TODO add graph with color by review category
+
+```{r}
+pal3 = c("#0952d9", "#4d91e5", "#002369", "#4b367b", "#7e4367", "#961759", "#8d0046", "#dc003f", "#e60a7b")
+```
+
+```{r}
+steam_rq3 %>%
+  filter(metacritic > 0   ) %>%
+  ggplot(aes(metacritic, 
+             score, 
+             color = fct_relevel(review, review_labels)
+             )) +
+  geom_jitter(aes(size = number_ratings), 
+              stroke = 0, 
+              alpha = 0.8) +
+  scale_color_manual(values = pal3, name = "Review") +
+  scale_size(breaks = c(20, 1000, 10000, 100000, 1000000),
+             range = c(1, 15), 
+             labels = scales::label_comma(),
+             name="Number of ratings") +
+  scale_x_continuous(limits = c(0,100)) +
+  ylab("Steam score") +
+  xlab("Metacritic score") +
+  theme_minimal() +
+  theme(legend.text = element_text(size = 9, color = "#93836C"),
+        legend.title = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.title.y = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.title.x = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.text.x = element_text(color = "#93836C", hjust = 0.5),
+        axis.text.y = element_text(color = "#93836C", vjust = 0.4),
+        panel.grid.major = element_line(color = "#DCD3C5"),
+        plot.background = element_rect(fill = "#F1ECE4"),
+        panel.background = element_blank(),
+        plot.margin = margin(rep(15,4)))
+```
 
 #### RQ4 - Does the price determine the quality/reviews of a game?
 
 ##### Summarising
+*(1) Compute the range, mean, and two other summary statistics of one numerical variable across the groups of one categorical variable from your data.*
+
+```{r}
+steam_rq3 %>%
+  group_by(fct_relevel(review, review_labels)) %>%
+  reframe(price_min = min(price),
+          price_max = max(price),
+          price_mean = mean(price),
+          price_stdev = sd(price),
+          price_median = median(price),
+          ) %>%
+  rename(review = 'fct_relevel(review, review_labels)')
+```
+
 
 ##### Graphing
 
@@ -609,7 +653,7 @@ In this task, we will do several exercises to reshape our data. The goal here is
 
 A reminder of the definition of *tidy* data:
 
--   Each row is an **observation**
+-   Each row is an **observation  
 -   Each column is a **variable**
 -   Each cell is a **value**
 
