@@ -585,7 +585,7 @@ steam_rq3 %>%
         panel.background = element_blank(),
         plot.margin = margin(rep(15,4)))
 ```
-
+TODO add graph with color by review category
 
 #### RQ4 - Does the price determine the quality/reviews of a game?
 
