@@ -583,7 +583,7 @@ steam_rq3 %>%
 ```
 
 ```{r}
-pal3 = c("#0952d9", "#4d91e5", "#002369", "#4b367b", "#7e4367", "#961759", "#8d0046", "#dc003f", "#e60a7b")
+pal3 <- c("#004B59", "#017692", "#2bd4cb", "#a7d5b2", "#92a5df", "#EBA3EA", "#F85F6F", "#ff7536", "#e7106c")
 ```
 
 ```{r}
@@ -638,18 +638,12 @@ steam_rq3 %>%
 
 ##### Graphing
 
-
-```{r}
-pal4 <- c("#004B59", "#017692", "#2bd4cb", "#a7d5b2", "#92a5df", "#EBA3EA", "#F85F6F", "#ff7536", "#e7106c")
-```
-
 ```{r}
 steam_rq4 <- steam_rq3 %>%
   mutate(review = fct_relevel(review, review_labels),
          review2 = review) %>%
   filter(metacritic > 0)
 ```
-
 
 ```{r}
 steam_rq4 %>%
@@ -665,7 +659,7 @@ steam_rq4 %>%
                      labels = scales::dollar_format()) +
   xlab("Price (USD)") +
   ylab("Metacritic score") +
-  scale_color_manual(values = pal4) +
+  scale_color_manual(values = pal3) +
   theme_minimal() +
   guides(color = "none") +
   theme(title = element_text(size = 9, face = "bold", color = "#93836C"),
