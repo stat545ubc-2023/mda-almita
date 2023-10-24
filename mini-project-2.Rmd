@@ -69,7 +69,8 @@ steam_2 <- steam_2_raw %>%
 
 # create final dataset
 steam <- steam_1 %>%
-  left_join(steam_2, by = "appid")
+  left_join(steam_2, by = "appid") %>%
+  distinct()
 
 head(steam)
 
@@ -132,7 +133,7 @@ Make sure it's clear what research question you are doing each operation for!
 
 *(2) Compute the number of observations for at least one of your categorical variables.*
 
-To determine the popularity of each genre or tags across time we first need to determine the number of observations of each variable. For this task I will determine the number of observations of the following variables: - `genres` - `steamspy_tags` - `release_year` (not exactly categorical but relevant to the research question)
+To determine the popularity of each genre or tags across time we first need to determine the number of observations of each variable (number of games). For this task I will determine the number of observations of the following variables: - `genres` - `steamspy_tags` - `release_year` (not exactly categorical but relevant to the research question).
 
 For that I will have to split up the `genres` and the `steamspy_tags` for each game entry, as some of them have different genres/tags assigned to them (see chunk below). I will also need to create a new column called `release_year` from `release_date`.
 
@@ -146,7 +147,7 @@ To separate the columns I will use the `separate_rows()` function from `tidyr` w
 ```{r}
 steam_rq1 <- steam %>%
   separate_rows(genres, sep = ";") %>%
-  separate_rows(steamspy_tags, sep = ";") 
+  separate_rows(steamspy_tags, sep = ";")
 
 unique(steam_rq1$genres)
 unique(steam_rq1$steamspy_tags)[1:20]
@@ -160,9 +161,12 @@ library(lubridate)
 
 ```{r}
 steam_rq1 <- steam_rq1 %>%
-  mutate(release_year = year(release_date))
+  mutate(release_year = year(release_date)) 
 
-steam_rq1 %>%
+steam_rq1 %>% 
+  #separating the genres and tags created repeated columns per game release, so to get the number of releases per year we need to remove the duplicated columns
+  select(appid, release_year) %>%
+  distinct() %>% 
   count(release_year)
 ```
 
@@ -180,9 +184,13 @@ The data that helps answer the research question is also obtained the same way:
 
 ```{r}
 steam_rq1 %>%
-  count(release_year, genres)
+  select(appid, release_year, genres) %>%
+  distinct() %>%
+  count(release_year,genres)
 
 steam_rq1 %>%
+  select(appid, release_year, steamspy_tags) %>%
+  distinct() %>%
   count(release_year, steamspy_tags)
 ```
 
@@ -194,11 +202,15 @@ I will be graphing the top 11 genres and top 16 tags for better visualization. W
 
 ```{r}
 top_genres <- steam_rq1 %>%
+  select(appid, genres) %>%
+  distinct() %>%
   count(genres, sort = TRUE) %>%
   slice_head(n = 11) %>%
   pull(genres)
 
 top_tags <- steam_rq1 %>%
+  select(appid, steamspy_tags) %>%
+  distinct() %>%
   count(steamspy_tags, sort = TRUE) %>%
   slice_head(n = 16) %>%
   pull(steamspy_tags)
@@ -212,6 +224,8 @@ I noticed that there are many `steamspy_tags` that are the same as `genres` so I
 ```{r}
 top_unique_tags <- steam_rq1 %>%
   filter(!steamspy_tags %in% genres) %>%
+  select(appid, steamspy_tags) %>%
+  distinct() %>%
   count(steamspy_tags, sort = TRUE) %>%
   slice_head(n = 16) %>%
   pull(steamspy_tags)
@@ -219,19 +233,16 @@ top_unique_tags <- steam_rq1 %>%
 print(top_unique_tags)
 ```
 
-For this task I want to create a stream chart using the `ggstream` package for `ggplot`. To show the relative relationship between genres/tags for each year in a beautiful way.
+For this task I want to create a stream chart using the `ggstream` package for `ggplot`. To show how genre/tag popularity have evolved throughout the years.  
 
 ```{r}
 library(ggstream)
-library("hues")
 ```
 
 I also will set a custom color palette for better category distinction (taken from two `MetBrewer` palettes):
 
 ```{r}
 pal= c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF", "#92C051FF", "#2B9B81FF", "#1F6E9CFF","#633372FF", "#E6A2A6FF", "#E87B89FF")
-
-swatch(pal)
 ```
 
 Now to construct the graphs: TODO explain why I used percentage and not counts TODO separate the tibble creation from the graphing
@@ -239,6 +250,8 @@ Now to construct the graphs: TODO explain why I used percentage and not counts T
 ```{r}
 steam_rq1 %>%
   # get observation counts and percentage of each genre for each year
+  select(appid, release_year, genres) %>%
+  distinct() %>%
   count(release_year, genres) %>%
   group_by(release_year) %>%
   mutate(percentage = 100*n/sum(n)) %>%
@@ -262,7 +275,7 @@ steam_rq1 %>%
                      breaks = c(1997, seq(1998,2018,2), 2019))+
   
   # streamgraph
-  geom_stream(bw = 0.88, sorting = "onset") +
+  geom_stream(bw = 0.82, sorting = "onset") +
   
   # theme and visual stuff
   scale_fill_manual(values = pal) +
@@ -288,12 +301,14 @@ steam_rq1 %>%
 ```{r}
 steam_rq1 %>%
   # get observation counts and percentage of each tag for each year
+  filter(steamspy_tags %in% top_unique_tags) %>%
+  select(appid, release_year, steamspy_tags) %>%
+  distinct() %>%
   count(release_year, steamspy_tags) %>%
   group_by(release_year) %>%
   mutate(percentage = 100*n/sum(n)) %>%
   
   # filter for top unique tags
-  filter(steamspy_tags %in% top_unique_tags) %>%
   
   # create plot
   ggplot(aes(release_year, percentage, 
@@ -311,7 +326,7 @@ steam_rq1 %>%
                      breaks = c(seq(1998,2018,2), 2019)) +
   
   # streamgraph
-  geom_stream(bw = 0.88, sorting = "onset") +
+  geom_stream(bw = 0.82, sorting = "onset") +
   
   # theme and visual stuff
   scale_fill_manual(values = pal) +
@@ -329,11 +344,52 @@ steam_rq1 %>%
         legend.text = element_text(size = 9, color = "#1c1204"),
         legend.spacing.y = unit(2,"pt"),
         legend.key.size = unit(15, "pt"),
-        plot.margin = margin(rep(15, 4)),
+        plot.margin = margin(15,20,30,15),
         plot.background = element_rect(fill = "#F1ECE4", color = NA),
         panel.background = element_blank()) +
   guides(fill = guide_legend(byrow = TRUE))
 ```
+These graphs represent the proportion share of the top genres/tags from games released each year. I'd say the second graph is more interesting because there is a greater variety of tags than genres. It is expected that some older tags/genres decrease in proportion as new types of games emerge, but it is still interesting to see the evolution. There is also a significant increase in proportion of indie games as more and more game making tools become accessible to people. I used proportions instead of actual counts because the amount of games released has dramatically increased throughout the years, so we wouldn't be able to appreciate the genre/tags from earlier years. Here is an example:
+
+```{r}
+steam_rq1 %>%
+  filter(genres %in% top_genres) %>%
+  select(appid, release_year, genres) %>%
+  distinct() %>%
+  count(release_year, genres) %>%
+  ggplot(aes(release_year, n, 
+             fill = genres, 
+             label = genres)) +
+  geom_vline(data = tibble(x = c(1997, seq(2000,2018,2), 2019), 1), 
+             aes(xintercept = x),
+             linetype = "dashed",
+             color = "#DCD3C5",
+             linewidth = 0.3) +
+  scale_x_continuous(position = "top", 
+                     labels = c(1997, seq(2000,2018,2), 2019), 
+                     breaks = c(1997, seq(2000,2018,2), 2019))+
+  geom_stream(bw = 0.7, sorting = "onset") +
+  scale_fill_manual(values = pal) +
+  theme_minimal() +
+  theme(legend.position = "right",
+        legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 9, 
+                                   color = "#93836C", 
+                                   angle = 45),
+        axis.text.x.top = element_text(margin = margin(b = 10)),
+        panel.grid = element_blank(),
+        legend.text = element_text(size = 9, color = "#1c1204"),
+        legend.spacing.y = unit(5,"pt"),
+        plot.margin = margin(rep(15, 4)),
+        plot.background = element_rect(fill = "#F1ECE4", color = NA),
+        panel.background = element_blank()) +
+  guides(fill = guide_legend(byrow = TRUE)) 
+```
+
+It's impossible to see any genres from games released before 2008. 
 
 #### RQ2 - Do developers tend to stick to the same types of games?
 
@@ -352,7 +408,9 @@ Separating the entries and filtering:
 ```{r}
 steam_rq2 <- steam_rq1 %>%
   separate_rows(developer, sep = ";") %>%
-  filter(!genres %in% c("Early Access", "Indie", "Free to Play") & !steamspy_tags %in% c("Early Access", "Indie", "Free to Play") & !steamspy_tags %in% genres)
+  filter(!genres %in% c("Early Access", "Indie", "Free to Play") & 
+         !steamspy_tags %in% c("Early Access", "Indie", "Free to Play") & 
+         !steamspy_tags %in% genres)
 
 head(steam_rq2, 10)
 ```
@@ -393,7 +451,7 @@ First lets figure out how many developers we are working with (*note that this i
 length(unique(steam_rq2_longer$developer))
 ```
 
-That's way too many developers for the plot. I would also like to see the distribution of games per developer, to better understand what I'm working with and if I should set a cut-off point based on the number of games.
+That's way too many developers for the plot. I want to see the distribution of games per developer, to better understand what I'm working with and if I should set a cut-off point based on the number of games.
 
 ```{r}
 (steam_rq2_gamecount <- steam_rq2_longer %>%
@@ -408,17 +466,18 @@ That's way too many developers for the plot. I would also like to see the distri
 steam_rq2_gamecount %>%
   ggplot(aes(n)) +
   geom_histogram(binwidth = 1, fill = "#93836C") +
-  theme_minimal() +
   scale_x_continuous(breaks = c(1,seq(2,41,2))) +
   scale_y_continuous(trans = scales::log1p_trans(),
                      breaks = c(1, 2, 5, 10, 50, 100, 250, 500, 1000, 2500, 5000),
                      expand = c(0,0)) +
   xlab("Games per developer") +
   ylab("Number of developers") +
-  theme(axis.text.y = element_text(size = 9, color = "#93836C"),
+  
+  #theme
+  theme_minimal() +
+  theme(title = element_text(size = 9, face = "bold", color = "#93836C"),
+        axis.text.y = element_text(size = 9, color = "#93836C"),
         axis.text.x = element_text(size = 9, color = "#93836C"),
-        axis.title.y = element_text(color = "#93836C"),
-        axis.title.x = element_text(color = "#93836C"),
         axis.ticks.x = element_line(color = "#DCD3C5"),
         axis.ticks.length.x = unit(10, "pt"),
         panel.grid.major.y = element_line(color = "#DCD3C5"),
@@ -430,6 +489,8 @@ steam_rq2_gamecount %>%
         panel.background = element_blank())
 ```
 
+*Note: The following graph corresponds to the chosen task, however it's not the graph I want to conclude this section with.*
+
 As we can see, most of the developers have only released 1 game, which won't do for visualizing the diversity of game types across developers. We can try to cut off at say 8 games, and see how many developers are left:
 
 ```{r}
@@ -439,18 +500,16 @@ steam_rq2_gamecount %>%
   length()
 ```
 
-`131` is still too many, but I'm thinking of a fun solution, we could pick 20 random developers from those 131 and plot them. Why this instead of picking the top 20 developers with most games? Because I don't want to be biased towards big established developers :).
+`131` is still too many, but I'm thinking of a fun solution, we could pick 20 random developers from those 131 (using `slice_sample`) and plot them. Why this instead of picking the top 20 developers with most games? Because I don't want to be biased towards big established developers :).
 
 ```{r}
 # note that this will choose different developers each time it is run
-
 (random_devs <- steam_rq2_gamecount %>%
   filter(n>= 8) %>%
   slice_sample(n = 20) %>%
   pull(developer))
 ```
-
-Now what I will need to select the top 20 of is top game types:
+Now what I will need is to select the top 20 game types:
 
 ```{r}
 (top_gametypes <- steam_rq2_longer %>% 
@@ -458,23 +517,28 @@ Now what I will need to select the top 20 of is top game types:
   slice_head(n = 20) %>%
   pull(game_type))
 ```
+And load `forcats` and create the color palette for the graph.
 
 ```{r}
-library(forcats)
+library(forcats) #to work with factors and rearrange them
 ```
 
 ```{r}
+# color palette
 pal2 <- c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0FF", "#E48171FF", "#BF3729FF", "#E69B00FF", "#F5BB50FF", "#ADA43BFF", "#355828FF", "#92C051FF", "#2B9B81FF", "#014E65", "#1F6E9CFF", "#9BDFE2", "#CACAE0", "#633372FF", "#D960A2")
 ```
 
+Now the final graph:
+
 ```{r}
 steam_rq2_gametype_count %>%
-  filter(developer %in% random_devs & game_type %in% top_gametypes) %>%
+  filter(developer %in% random_devs & 
+         game_type %in% top_gametypes) %>%
+  
+  # plot
   ggplot(aes(x = fct_rev(developer), 
              y = n, 
-             fill = fct_reorder(game_type, n, .desc = TRUE)
-             )
-         ) +
+             fill = fct_reorder(game_type, n, .desc = TRUE))) +
   geom_col(position = "fill", color = "#F1ECE4", linewidth = 1) +
   scale_y_continuous(labels = scales::percent_format(),
                      position = "right",
@@ -483,22 +547,28 @@ steam_rq2_gametype_count %>%
   scale_x_discrete(expand = c(0,0)) +
   ylab("Percent of games") +
   xlab("Developer") +
-  scale_fill_manual(values = sample(pal2)) +
+  
+  # random colors! will change everytime it is run
+  scale_fill_manual(values = sample(pal2)) + 
+  
+  # theme
   theme_minimal() +
-  theme(legend.position = c(0.25,-0.15),
+  theme(title = element_text(size = 9, face = "bold", color = "#93836C"),
+        legend.position = c(0.25,-0.15),
         legend.direction = "horizontal",
         legend.title = element_blank(),
         legend.text = element_text(size = 9, color = "#93836C"),
         legend.key.size = unit(12, "pt"),
-        axis.title.y = element_text(size = 9, face = "bold", color = "#93836C"),
-        axis.title.x = element_text(size = 9, face = "bold", color = "#93836C"),
         axis.text.x = element_text(color = "#93836C", hjust = 0.5),
         axis.text.y = element_text(color = "#93836C", vjust = 0.4),
         plot.background = element_rect(fill = "#F1ECE4"),
         panel.background = element_blank(),
         plot.margin = margin(15, 15, 70, 15)) +
+  
+  # flipping coordinates because developer names are long
   coord_flip() 
 ```
+It's very interesting to visualize the diversity of each developer. We can see that some developers release a wide variety of games while others tend to stick to the same types of games. Calculating a sort of diversity index would be interesting to numerically answer my research question, but that is out of my scope for this milestone. Still, this graph is very pretty ☺️. 
 
 #### RQ3 - How does metacritic score relate to player ratings?
 
@@ -521,12 +591,14 @@ Steam's has two types of reviews: positive and negative. The percentage of the p
 | 0-19        | 50-499            | Very Negative           |
 | 0-19        | 500+              | Overwhelmingly Negative |
 
-So I will create a new variable `review` from the `positive_ratings` and `negative_ratings` variables. For that I will need to compute: `number_ratings` and `score` (percent of positive ratings). 
+So I will create a new categorical variable `review` from the `positive_ratings` and `negative_ratings` variables. For that I will need to compute: `number_ratings` and `score` (percent of positive ratings). 
 
 ```{r}
-review_labels <- c("Overwhelmingly Positive","Very Positive","Positive", "Mostly Positive", "Mixed", "Mostly Negative", "Negative", "Very Negative", "Overwhelmingly Negative")
+# setting up the review labels in order from best to worst
+(review_labels <- c("Overwhelmingly Positive","Very Positive","Positive", "Mostly Positive", "Mixed", "Mostly Negative", "Negative", "Very Negative", "Overwhelmingly Negative"))
 ```
 
+To create the `review` column I will make use of the `mutate` function along with the `case_when` to specify which cases correspond to each type of review. 
 
 ```{r}
 steam_rq3 <- steam %>%
@@ -544,7 +616,7 @@ steam_rq3 <- steam %>%
            score >= 0 & number_ratings >= 50 ~ "Very Negative",
            score >= 10 & number_ratings >= 10 ~ "Negative",
          )) %>%
-  filter(!is.na(review))
+  filter(!is.na(review)) # removes games without review
 
 steam_rq3 %>%
   select(name, number_ratings, score, review) %>%
@@ -554,11 +626,16 @@ steam_rq3 %>%
 ##### Graphing
 *(7) Make a graph where it makes sense to customize the alpha transparency.*
 
+Now, returning to the research question: *how does metacritic score relate to player ratings?*, I want to visualize this relationship with a scatter plot, with `metacritic` score on the x-axis and player rating (`score`) on the y-axis. 
+
 ```{r}
 steam_rq3 %>%
+  # removing entries without metacritic score
   filter(metacritic > 0) %>%
+  
+  # plot
   ggplot(aes(metacritic, score)) +
-  geom_jitter(aes(size = number_ratings), 
+  geom_jitter(aes(size = number_ratings),  # geom_jitter to create a better looking plot
               stroke = 0, 
               color = "#301f07",
               alpha = 0.4) +
@@ -569,11 +646,11 @@ steam_rq3 %>%
   scale_x_continuous(limits = c(0,100)) +
   ylab("Steam score") +
   xlab("Metacritic score") +
+  
+  # theme
   theme_minimal() +
-  theme(legend.text = element_text(size = 9, color = "#93836C"),
-        legend.title = element_text(size = 9, face = "bold", color = "#93836C"),
-        axis.title.y = element_text(size = 9, face = "bold", color = "#93836C"),
-        axis.title.x = element_text(size = 9, face = "bold", color = "#93836C"),
+  theme(title = element_text(size = 9, face = "bold", color = "#93836C"),
+        legend.text = element_text(size = 9, color = "#93836C"),
         axis.text.x = element_text(color = "#93836C", hjust = 0.5),
         axis.text.y = element_text(color = "#93836C", vjust = 0.4),
         panel.grid.major = element_line(color = "#DCD3C5"),
@@ -582,50 +659,18 @@ steam_rq3 %>%
         plot.margin = margin(rep(15,4)))
 ```
 
-```{r}
-pal3 <- c("#004B59", "#017692", "#2bd4cb", "#a7d5b2", "#92a5df", "#EBA3EA", "#F85F6F", "#ff7536", "#e7106c")
-```
-
-```{r}
-steam_rq3 %>%
-  filter(metacritic > 0   ) %>%
-  ggplot(aes(metacritic, 
-             score, 
-             color = fct_relevel(review, review_labels)
-             )) +
-  geom_jitter(aes(size = number_ratings), 
-              stroke = 0, 
-              alpha = 0.8) +
-  scale_color_manual(values = pal3, name = "Review") +
-  scale_size(breaks = c(20, 1000, 10000, 100000, 1000000),
-             range = c(1, 15), 
-             labels = scales::label_comma(),
-             name="Number of ratings") +
-  scale_x_continuous(limits = c(0,100)) +
-  ylab("Steam score") +
-  xlab("Metacritic score") +
-  theme_minimal() +
-  theme(legend.text = element_text(size = 9, color = "#93836C"),
-        legend.title = element_text(size = 9, face = "bold", color = "#93836C"),
-        axis.title.y = element_text(size = 9, face = "bold", color = "#93836C"),
-        axis.title.x = element_text(size = 9, face = "bold", color = "#93836C"),
-        axis.text.x = element_text(color = "#93836C", hjust = 0.5),
-        axis.text.y = element_text(color = "#93836C", vjust = 0.4),
-        panel.grid.major = element_line(color = "#DCD3C5"),
-        plot.background = element_rect(fill = "#F1ECE4"),
-        panel.background = element_blank(),
-        plot.margin = margin(rep(15,4)))
-```
-TODO change label positions
+We can see there is a general positive correlation between Steam score and Metacritic score, however there are some exceptions where some games have a high Metacritic score but low Steam score and vice versa. Most games with high Metacritic score and high Steam score also have the most number of ratings (popular games!).
 
 #### RQ4 - Does the price determine the quality/reviews of a game?
 
 ##### Summarising
 *(1) Compute the range, mean, and two other summary statistics of one numerical variable across the groups of one categorical variable from your data.*
 
+The numerical value I will be looking at is `price` and the categorical variable will be `review` which we created in the last question. 
+
 ```{r}
 steam_rq3 %>%
-  group_by(fct_relevel(review, review_labels)) %>%
+  group_by(fct_relevel(review, review_labels)) %>% #for ordering the results
   reframe(price_min = min(price),
           price_max = max(price),
           price_mean = mean(price),
@@ -634,34 +679,66 @@ steam_rq3 %>%
           ) %>%
   rename(review = 'fct_relevel(review, review_labels)')
 ```
+It's interesting to see how there are no free games with Very Negative or Overwhelmingly Negative reviews. This could be attributed to the fact that most players will probably not expect much from free games and won't be upset if it turns out to be a bad game. However if the game costs money and it sucks then more reason to give a negative review. Overwhelmingly positive games have the highest mean and median prices, but if the difference is significant between the `review` categories would require statistical testing. 
 
 
 ##### Graphing
+*(6) Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are "pretty" or easier to read.*
+
+For the graphing I want to compare both the metacritic score and the review category against the price, to see if there is any trend or relation. 
+
+Here is the palette I will use:
+```{r}
+pal3 <- c("#004B59", "#017692", "#2bd4cb", "#a7d5b2", "#92a5df", "#EBA3EA", "#F85F6F", "#ff7536", "#e7106c")
+```
+
+Now I need to create the tibble for the graph:
 
 ```{r}
 steam_rq4 <- steam_rq3 %>%
   mutate(review = fct_relevel(review, review_labels),
-         review2 = review) %>%
-  filter(metacritic > 0)
+         # review 2 will be used for the group aesthetic for the first geom
+         review2 = review) %>% 
+  filter(metacritic > 0) %>% # drop entries that don't have metacritic score
+  select(appid, name,price, metacritic, score, review, review2, number_ratings)
+
+head(steam_rq4, 10)
 ```
+
+Now to create the graph:
 
 ```{r}
 steam_rq4 %>%
   ggplot(aes(x = price, y = metacritic)) +
-  geom_jitter(data = steam_rq4 %>% select(-review), aes(group = review2, size = number_ratings), color="#DCD3C5", width = 0.1, alpha=0.4) +
-  geom_jitter(aes(color = review, size = number_ratings), width = 0.1) +
+  
+  # first geom, background
+  geom_jitter(data = steam_rq4 %>% select(-review), 
+              aes(group = review2, size = number_ratings), 
+              color="#DCD3C5", 
+              width = 0.1, 
+              alpha=0.5) +
+  
+  # second geom, colored highlight for each category
+  geom_jitter(aes(color = review, size = number_ratings), 
+              width = 0.05) +
+  
+  # axis settings
   scale_size(breaks = c(20, 1000, 10000, 100000, 1000000),
-             range = c(0.4, 13), 
+             range = c(0.4, 8), 
              labels = scales::label_comma(),
-             name="Number of ratings") +
+             name= "Number of ratings") +
   scale_x_continuous(trans = scales::log1p_trans(),
                      breaks = c(0,1.5,5,20,60),
                      labels = scales::dollar_format()) +
   xlab("Price (USD)") +
   ylab("Metacritic score") +
+  
+  # theme and color
   scale_color_manual(values = pal3) +
   theme_minimal() +
-  guides(color = "none") +
+  guides(color = "none",
+         size = guide_legend(override.aes = list(color ="#93836C"))
+         ) +
   theme(title = element_text(size = 9, face = "bold", color = "#93836C"),
         strip.text = element_text(size = 8, color = "#93836C"),
         legend.text = element_text(size = 9, color = "#93836C"),
@@ -671,9 +748,22 @@ steam_rq4 %>%
         panel.grid.major = element_line(color = "#DCD3C5", linewidth = 0.3),
         plot.background = element_rect(fill = "#F1ECE4"),
         panel.background = element_blank(),
-        plot.margin = margin(15,30,15,15)) +
+        plot.margin = margin(15,30,15,15)
+        ) +
+  
+  # facetting
   facet_wrap(~review)
 ```
+
+So as we can see, the price doesn't necessarily relate to the game's quality or review scores. Also the Metacritic score doesn't necessarily relate to player's experiences and reviews (however there is a case to be made for bot reviews, troll reviews, and nonsense reviews on Steam that could confound the data). 
+
+There are very few Negative-Overwhelmingly Negative games, I attribute this to the Metacritic score filtering, not all games on steam have a Metacritic score. Most games with Overwhelmingly Positive reviews have high Metacritic score and cost more than $5.00. There are no free games with Positive score however again I attribute this to the Metacritic score filtering. Recall that Positive games have between 10-49 reviews, so they're smaller, less popular games. It looks like the Mostly Positive and Mixed category have the biggest spread of prices and Metacritic scores. Its also interesting to see that the Overwhelmingly Negative games don't have really low Metacritic score, and I want to see which ones they are (as well as that Very Negative games).
+
+```{r}
+steam_rq4 %>%
+  filter(review %in% c("Negative", "Very Negative", "Overwhelmingly Negative"))
+```
+Never heard of them...
 
 <!----------------------------------------------------------------------------->
 
@@ -682,7 +772,7 @@ steam_rq4 %>%
 Based on the operations that you've completed, how much closer are you to answering your research questions? Think about what aspects of your research questions remain unclear. Can your research questions be refined, now that you've investigated your data a bit more? Which research questions are yielding interesting results?
 
 <!------------------------- Write your answer here ---------------------------->
-
+I think I am much closer to fully answering my research questions, each task done allowed me to prepare and visualize answers to my questions. I find that all questions yield interesting results that could be further explored with other types of numerical or statistical analysis as I wrote in some of the tasks above, or even viewing relationships with other variables not explored in this milestone. 
 <!----------------------------------------------------------------------------->
 
 # Task 2: Tidy your data
@@ -691,7 +781,7 @@ In this task, we will do several exercises to reshape our data. The goal here is
 
 A reminder of the definition of *tidy* data:
 
--   Each row is an **observation  
+-   Each row is an **observation**  
 -   Each column is a **variable**
 -   Each cell is a **value**
 
@@ -700,7 +790,23 @@ A reminder of the definition of *tidy* data:
 Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have \>8 variables, just pick 8, and explain whether the data is untidy or tidy.
 
 <!--------------------------- Start your work below --------------------------->
+```{r}
+steam_task2 <- steam %>%
+  select(name, release_date, developer,genres, price, positive_ratings, negative_ratings, owners) 
 
+glimpse(steam_task2)
+```
+
+1. `name`: each cell is the name of a game
+2. `release_date`: each cell is a date of game release
+3. `developer`: each cell is a developer for the game
+4. `genres`: each cell contains all the genres attributed to the game, when many they're separated by ";"
+5. `price`: each cell contains the game price
+6. `positive_ratings`: each cell contains the number of positive ratings for the game
+7. `negative_ratings`: each cell contains the number of negative ratings for the game
+8. `owners`: each cell contains the number of game owners
+
+I'd say the data is tidy in the context of analyzing the data per game, as each row corresponds to a game, each column corresponds to different variables that represent the game's metadata and each cell contains the values of said metadata. But in another context, like in task 2 for RQ2 I had to reshape the data to merge `genres` and `steamspy_tags` into one column and that created duplicate game entries, and untidy data by also adding the `category` column (which I removed and that made it tidy again).
 <!----------------------------------------------------------------------------->
 
 ### 2.2 (4 points)
@@ -713,6 +819,42 @@ Be sure to explain your reasoning for this task. Show us the "before" and "after
 
 <!--------------------------- Start your work below --------------------------->
 
+So for untidying this data, I will use the `pivot_longer` function to merge the positive_ratings and negative_ratings columns into `rating_type` (positive or negative) and `ratings` (rating count). 
+
+This is how it looks before:
+
+```{r}
+head(steam_task2, 10)
+```
+
+And this is after:
+
+```{r}
+steam_task2_untidy <- steam_task2 %>% 
+  pivot_longer(cols = c(positive_ratings, negative_ratings),
+               names_to = "rating_type",
+               values_to = "ratings")
+
+head(steam_task2_untidy)
+```
+We have the new `rating_type` column and the `ratings` column as well. This also created duplicate rows:
+
+```{r}
+which(duplicated(steam_task2_untidy))
+```
+
+So to tidy it up again I'll need to do two things: remove duplicated rows and then use `pivot_wider`.
+
+```{r}
+steam_task2_tidy <- steam_task2_untidy %>%
+  distinct() %>%
+  pivot_wider(names_from = rating_type,
+              values_from = ratings)
+
+head(steam_task2_tidy, 10)
+```
+
+Now it looks as it did in the beginning!
 <!----------------------------------------------------------------------------->
 
 ### 2.3 (4 points)
@@ -721,15 +863,15 @@ Now, you should be more familiar with your data, and also have made progress in 
 
 <!-------------------------- Start your work below ---------------------------->
 
-1.  *FILL_THIS_IN*
-2.  *FILL_THIS_IN*
+1.  do developers tend to stick to the same types of games?
+2.  does the price determine the quality/reviews of a game?
 
 <!----------------------------------------------------------------------------->
 
 Explain your decision for choosing the above two research questions.
 
 <!--------------------------- Start your work below --------------------------->
-
+I chose these two because I think there can be much more exploration and analysis to be done: creating new variables, numeric and visual representations, statistical analysis, relationships with other variables that could help answer the questions. All questions are interesting to me and I came up with even more questions I could try to answer while working on this milestone... 
 <!----------------------------------------------------------------------------->
 
 Now, try to choose a version of your data that you think will be appropriate to answer these 2 questions. Use between 4 and 8 functions that we've covered so far (i.e. by filtering, cleaning, tidy'ing, dropping irrelevant columns, etc.).
@@ -737,6 +879,68 @@ Now, try to choose a version of your data that you think will be appropriate to 
 (If it makes more sense, then you can make/pick two versions of your data, one for each research question.)
 
 <!--------------------------- Start your work below --------------------------->
+
+#### RQa: Do developers tend to stick to the same types of games?
+
+So for this question I will do the same as I did in task 1.2:
+
+1. separate entries with multiple developers, genres and steamspy tags
+2. merge genres and steamspy tags into `game_type`
+3. keep the following columns: `appid`, `name`, `developer`, `game_type`, `release_date`
+4. remove game types that don't represent the type of game and remove duplicate rows
+
+
+```{r}
+steam_rqa <- steam %>%
+  separate_rows(developer, sep = ";") %>%
+  separate_rows(genres, sep = ";") %>%
+  separate_rows(steamspy_tags, sep = ";") %>%
+  pivot_longer(cols = c(genres, steamspy_tags),
+               names_to = "category",
+               values_to = "game_type") %>%
+  select(appid, name, developer, game_type, release_date) %>%
+  filter(!game_type %in% c("Early Access", "Indie", "Free to Play")) %>%
+  distinct()
+
+head(steam_rqa, 10)
+glimpse(steam_rqa)
+```
+
+
+#### RQb: Does the price determine the quality/reviews of a game?
+
+For this question, I will do the same as for the summarising task in 1.2, however I also want to keep other columns. The process is this:
+
+1. create categorical variable for steam reviews (`review`) and make it an ordered factor
+2. keep the following variables: `appid`, `name`, `release_date`, `review`, `steam_score`, `number_ratings`, `metacritic`, `average_playtime`, `median_playtime`, `price`, `owners`, `owners_variance`
+
+```{r}
+steam_rqb <- steam %>%
+  mutate(number_ratings = positive_ratings + negative_ratings,
+         score = 100 * positive_ratings / number_ratings,
+         review = case_when(
+           score >= 95 & number_ratings >= 500 ~ "Overwhelmingly Positive",
+           score >= 80 & number_ratings >= 500 ~ "Very Positive",
+           score >= 80 & number_ratings >= 50 ~  "Very Positive",
+           score >= 80 & number_ratings >= 10 ~  "Positive",
+           score >= 70 & number_ratings >= 10 ~ "Mostly Positive",
+           score >= 40 & number_ratings >= 10 ~ "Mixed",
+           score >= 20 & number_ratings >= 10 ~ "Mostly Negative",
+           score >= 0 & number_ratings >= 500 ~ "Overwhelmingly Negative",
+           score >= 0 & number_ratings >= 50 ~ "Very Negative",
+           score >= 10 & number_ratings >= 10 ~ "Negative"),
+         review = fct_relevel(review, review_labels)
+         ) %>%
+  filter(!is.na(review)) %>%
+  select(appid, name, release_date, review, score, number_ratings, metacritic, average_playtime, median_playtime, price, owners, owners_variance) %>%
+  rename(steam_score = score)
+
+head(steam_rqb, 10)
+glimpse(steam_rqb)
+```
+
+
+<!----------------------------------------------------------------------------->
 
 # Task 3: Modelling
 
