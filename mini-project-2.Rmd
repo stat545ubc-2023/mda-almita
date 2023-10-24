@@ -530,7 +530,7 @@ pal2 <- c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B
 
 Now the final graph:
 
-```{r}
+```{r dev_genres}
 steam_rq2_gametype_count %>%
   filter(developer %in% random_devs & 
          game_type %in% top_gametypes) %>%
@@ -628,7 +628,7 @@ steam_rq3 %>%
 
 Now, returning to the research question: *how does metacritic score relate to player ratings?*, I want to visualize this relationship with a scatter plot, with `metacritic` score on the x-axis and player rating (`score`) on the y-axis. 
 
-```{r}
+```{r metacritic_score_scatter}
 steam_rq3 %>%
   # removing entries without metacritic score
   filter(metacritic > 0) %>%
@@ -709,7 +709,7 @@ head(steam_rq4, 10)
 
 Now to create the graph:
 
-```{r}
+```{r price_reviews}
 steam_rq4 %>%
   ggplot(aes(x = price, y = metacritic)) +
   
