@@ -950,9 +950,9 @@ Pick a research question from 1.2, and pick a variable of interest (we'll call i
 
 <!-------------------------- Start your work below ---------------------------->
 
-**Research Question**: What is the relationship between the price of a game and its quality/reviews?
+**Research Question**: How does metacritic score relate to player ratings?
 
-**Variable of interest**: Game review score
+**Variable of interest**: Steam score
 
 <!----------------------------------------------------------------------------->
 
@@ -967,6 +967,18 @@ Fit a model or run a hypothesis test that provides insight on this variable with
     -   You could use `lm()` to test for significance of regression coefficients.
 
 <!-------------------------- Start your work below ---------------------------->
+For this section I want to fit a linear model for the relationship between steam_score and metacritic.  
+
+```{r}
+library(broom)
+```
+
+```{r}
+steam_lm <- lm(steam_score ~ metacritic, data = steam_rqb)
+
+summary.lm(steam_lm)
+```
+
 
 <!----------------------------------------------------------------------------->
 
@@ -979,6 +991,12 @@ Produce something relevant from your fitted model: either predictions on Y, or a
 -   Obtain your results using the `broom` package if possible. If your model is not compatible with the broom function you're needing, then you can obtain your results by some other means, but first indicate which broom function is not compatible.
 
 <!-------------------------- Start your work below ---------------------------->
+I want to extract the regression coefficient and p-value of the model, for that I will make use of the `glance` function from `broom`.
+
+```{r}
+(lm_r2 <- glance(steam_lm) %>% pull(r.squared))
+(lm_pval <- glance(steam_lm) %>% pull(p.value) %>% as.numeric()) 
+```
 
 <!----------------------------------------------------------------------------->
 
