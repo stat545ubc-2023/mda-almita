@@ -247,7 +247,7 @@ pal= c("#17154FFF", "#2F357CFF", "#6C5D9EFF", "#9D9CD5FF", "#B0799AFF", "#F6B3B0
 
 Now on to the graphs: 
 
-```{r}
+```{r genre_streamgraph}
 steam_rq1 %>%
   # get observation counts and percentage of each genre for each year
   select(appid, release_year, genres) %>%
@@ -298,7 +298,7 @@ steam_rq1 %>%
   guides(fill = guide_legend(byrow = TRUE)) # added this so legend items separate from each other
 ```
 
-```{r}
+```{r tag_streamgraph}
 steam_rq1 %>%
   # get observation counts and percentage of each tag for each year
   filter(steamspy_tags %in% top_unique_tags) %>%
@@ -351,7 +351,7 @@ steam_rq1 %>%
 ```
 These graphs represent the proportion share of the top genres/tags from games released each year. I'd say the second graph is more interesting because there is a greater variety of tags than genres. It is expected that some older tags/genres decrease in proportion as new types of games emerge, but it is still interesting to see the evolution. There is also a significant increase in proportion of indie games as more and more game making tools become accessible to people. I used proportions instead of actual counts because the amount of games released has dramatically increased throughout the years, so we wouldn't be able to appreciate the genre/tags from earlier years. Here is an example:
 
-```{r}
+```{r genre_streamgraph_counts}
 steam_rq1 %>%
   filter(genres %in% top_genres) %>%
   select(appid, release_year, genres) %>%
@@ -462,7 +462,7 @@ That's way too many developers for the plot. I want to see the distribution of g
   arrange(desc(n)))
 ```
 
-```{r}
+```{r dev_histogram}
 steam_rq2_gamecount %>%
   ggplot(aes(n)) +
   geom_histogram(binwidth = 1, fill = "#93836C") +
@@ -669,7 +669,7 @@ We can see there is a general positive correlation between Steam score and Metac
 The numerical value I will be looking at is `price` and the categorical variable will be `review` which we created in the last question. 
 
 ```{r}
-steam_rq3 %>%
+steam_rq3_summary <- steam_rq3 %>%
   group_by(fct_relevel(review, review_labels)) %>% #for ordering the results
   reframe(price_min = min(price),
           price_max = max(price),
@@ -678,6 +678,8 @@ steam_rq3 %>%
           price_median = median(price),
           ) %>%
   rename(review = 'fct_relevel(review, review_labels)')
+
+steam_rq3_summary
 ```
 It's interesting to see how there are no free games with Very Negative or Overwhelmingly Negative reviews. This could be attributed to the fact that most players will probably not expect much from free games and won't be upset if it turns out to be a bad game. However if the game costs money and it sucks then more reason to give a negative review. Overwhelmingly positive games have the highest mean and median prices, but if the difference is significant between the `review` categories would require statistical testing. 
 
@@ -1012,6 +1014,14 @@ Take a summary table that you made from Task 1, and write it as a csv file in yo
 -   **Reproducibility criteria**: You should be able to delete the csv file, and remake it simply by knitting this Rmd file.
 
 <!-------------------------- Start your work below ---------------------------->
+```{r}
+library(here)
+```
+
+I will be exporting the table I made for RQ3 
+```{r}
+write_csv(steam_rq3_summary, here("output", "rq3_summary.csv"))
+```
 
 <!----------------------------------------------------------------------------->
 
@@ -1022,6 +1032,13 @@ Write your model object from Task 3 to an R binary file (an RDS), and load it ag
 -   The same robustness and reproducibility criteria as in 4.1 apply here.
 
 <!-------------------------- Start your work below ---------------------------->
+```{r}
+saveRDS(steam_lm, here("output", "steam_lm.RDS"))
+
+steam_lm2 <- readRDS(here("output", "steam_lm.RDS"))
+
+tidy(steam_lm2)
+```
 
 <!----------------------------------------------------------------------------->
 
