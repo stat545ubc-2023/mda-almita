@@ -976,11 +976,11 @@ library(broom)
 ```
 
 ```{r}
-steam_lm <- lm(steam_score ~ metacritic, data = steam_rqb)
+steam_lm <- lm(steam_score ~ metacritic, data = steam_rqb %>% filter(metacritic > 0))
 
 summary.lm(steam_lm)
 ```
-
+The p-value indicates that there is a non-zero correlation between `steam_score` and `metacritic`, and the R-squared value indicates that the correlation is a weak and positive. 
 
 <!----------------------------------------------------------------------------->
 
