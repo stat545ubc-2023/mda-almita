@@ -92,7 +92,7 @@ First, write out the 4 research questions:
 1.  how has genre popularity changed across time?
 2.  do developers tend to stick to the same types of games?
 3.  how does metacritic score relate to player ratings?
-4.  does the price determine the quality/reviews of a game? <!----------------------------------------------------------------------------->
+4.  what is the relationship between the price of a game and its quality/reviews? <!----------------------------------------------------------------------------->
 
 I changed my research questions stated on milestone 1 to better fit the tasks for this milestone.
 
@@ -661,7 +661,7 @@ steam_rq3 %>%
 
 We can see there is a general positive correlation between Steam score and Metacritic score, however there are some exceptions where some games have a high Metacritic score but low Steam score and vice versa. Most games with high Metacritic score and high Steam score also have the most number of ratings (popular games!).
 
-#### RQ4 - Does the price determine the quality/reviews of a game?
+#### RQ4 - What is the relationship between the price of a game and its quality/reviews?
 
 ##### Summarising
 *(1) Compute the range, mean, and two other summary statistics of one numerical variable across the groups of one categorical variable from your data.*
@@ -907,7 +907,7 @@ glimpse(steam_rqa)
 ```
 
 
-#### RQb: Does the price determine the quality/reviews of a game?
+#### RQb: What is the relationship between the price of a game and its quality/reviews?
 
 For this question, I will do the same as for the summarising task in 1.2, however I also want to keep other columns. The process is this:
 
@@ -950,9 +950,9 @@ Pick a research question from 1.2, and pick a variable of interest (we'll call i
 
 <!-------------------------- Start your work below ---------------------------->
 
-**Research Question**: FILL_THIS_IN
+**Research Question**: What is the relationship between the price of a game and its quality/reviews?
 
-**Variable of interest**: FILL_THIS_IN
+**Variable of interest**: Game review score
 
 <!----------------------------------------------------------------------------->
 
